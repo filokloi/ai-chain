@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chain</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container">
+        <aside id="history-sidebar">
+            <div class="sidebar-header">
+                <button id="new-chat-button" class="sidebar-button" data-i18n-title-key="newChatTitle" title="New Chat"><i class="fa-solid fa-square-plus"></i> <span data-i18n-key="newChatLabel">New Chat</span></button>
+            </div>
+            <div class="sidebar-search">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="history-search-input" data-i18n-placeholder-key="searchHistoryPlaceholder" placeholder="Search history...">
+            </div>
+            <div class="sidebar-content">
+                <ul id="history-list">
+                </ul>
+            </div>
+            <div class="sidebar-footer">
+                <button id="clear-history-button" title="Clear All History"><i class="fa-solid fa-trash-can"></i> <span data-i18n-key="clearHistoryLabel">Clear History</span></button>
+            </div>
+        </aside>
+
+        <div id="main-content">
+            <header class="app-header">
+                <div class="header-left">
+                    <button id="history-button" class="control-button" data-i18n-title-key="historyTitle" title="History"><i class="fa-solid fa-bars"></i></button>
+                    <div class="logo" id="logo-button">
+                        <i class="fa-solid fa-link"></i>
+                        <h1>AI Chain</h1>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button id="force-switch-button" class="control-button" title="Test Next Model" data-i18n-key="forceSwitchLabel" data-i18n-title-key="forceSwitchLabel">
+                        <i class="fa-solid fa-forward"></i>
+                    </button>
+                    <div class="lang-control">
+                        <button id="lang-button" class="control-button lang-display-button">
+                        </button>
+                        <div id="lang-menu" class="hidden">
+                            <a href="#" data-lang="en"><img src="https://flagcdn.com/w20/gb.png" alt="English"> EN</a>
+                            <a href="#" data-lang="sr"><img src="https://flagcdn.com/w20/rs.png" alt="Srpski"> RS</a>
+                            <a href="#" data-lang="de"><img src="https://flagcdn.com/w20/de.png" alt="Deutsch"> DE</a>
+                            <a href="#" data-lang="es"><img src="https://flagcdn.com/w20/es.png" alt="Español"> ES</a>
+                            <a href="#" data-lang="fr"><img src="https://flagcdn.com/w20/fr.png" alt="Français"> FR</a>
+                            <a href="#" data-lang="zh"><img src="https://flagcdn.com/w20/cn.png" alt="中文"> CN</a>
+                            <a href="#" data-lang="ru"><img src="https://flagcdn.com/w20/ru.png" alt="Русский"> RU</a>
+                            <a href="#" data-lang="ja"><img src="https://flagcdn.com/w20/jp.png" alt="日本語"> JP</a>
+                        </div>
+                    </div>
+                    <button id="settings-button" class="control-button">
+                        <i class="fa-solid fa-sliders"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div id="welcome-overlay">
+                <div class="welcome-content">
+                    <div class="logo">
+                        <i class="fa-solid fa-link"></i>
+                        <h1>AI Chain</h1>
+                    </div>
+                    <p data-i18n-key="welcomeSlogan">One chat, use all your free AI models, uninterrupted.</p>
+                    <button id="start-chat-button" data-i18n-key="startChat">Start Chatting</button>
+                </div>
+                <div id="dynamic-model-list-container">
+                    <h3 data-i18n-key="topModelsTitle">Today's Top Models</h3>
+                    <div class="scrolling-list-viewport">
+                        <ul id="model-ranking-list">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <main id="chat-container">
+                <section id="messages-section">
+                </section>
+            </main>
+
+            <footer class="app-footer">
+                <div id="potentiometer-container">
+                    <div class="potentiometer-labels">
+                        <span data-i18n-key="economy">Economy</span>
+                        <span data-i18n-key="balanced">Balanced</span>
+                        <span data-i18n-key="power">Max. Power</span>
+                    </div>
+                    <div class="potentiometer-track">
+                        <div class="potentiometer-triangle"></div>
+                        <input type="range" min="1" max="100" value="100" class="slider" id="intelligence-slider">
+                    </div>
+                </div>
+                <div id="file-preview-container">
+                </div>
+                <form id="message-form">
+                    <div id="upload-menu-container">
+                        <button type="button" id="upload-button" class="input-button">
+                            <i class="fa-solid fa-paperclip"></i>
+                        </button>
+                        <div id="upload-options" class="hidden">
+                            <button type="button" id="upload-image-button" class="upload-option" title="Upload Image" data-i18n-title-key="uploadImageTitle"><i class="fa-solid fa-image"></i></button>
+                            <button type="button" id="upload-doc-button" class="upload-option" title="Upload Document" data-i18n-title-key="uploadDocTitle"><i class="fa-solid fa-file-lines"></i></button>
+                        </div>
+                    </div>
+                    <textarea id="message-input" placeholder="Enter a message..." rows="1" data-i18n-key="messagePlaceholder"></textarea>
+                    <button type="submit" id="send-button" class="input-button">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </form>
+                <div class="status-bar">
+                    <div id="model-selector-button" class="clickable" data-i18n-title-key="modelSelectionTitle" title="Select a Model">
+                        <span data-i18n-key="currentModelLabel">Current:</span>
+                        <strong id="current-model-name" data-i18n-key="notConfigured">Not Configured</strong>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="fallback-models">
+                        <span data-i18n-key="fallbackModelLabel">Fallback:</span>
+                        <span id="fallback-models-list">None</span>
+                    </div>
+                </div>
+            </footer>
+            
+            <div id="settings-page" class="hidden">
+                <div class="settings-content">
+                    <header class="settings-header">
+                        <h2 data-i18n-key="settingsTitle">API Key Settings</h2>
+                        <button id="close-settings-button" class="close-button">&times;</button>
+                    </header>
+                    <section class="settings-body">
+                        <p class="settings-motivation" data-i18n-key="settingsMotivation">Connect your free API keys to unlock the full potential of AI Chain. Your keys are stored securely in your browser and never leave your device.</p>
+                        
+                        <div class="settings-layout">
+                            <div class="settings-column">
+                                <fieldset>
+                                    <legend data-i18n-key="essentialKeys">Essential</legend>
+                                    <div class="api-key-group">
+                                        <label for="openrouter-key-input">
+                                            <a href="https://openrouter.ai/keys" target="_blank">OpenRouter Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                                        </label>
+                                        <p class="key-description" data-i18n-key="openrouterDescription">"Universal Key" - Access to dozens of AI models (recommended).</p>
+                                        <div class="password-input-wrapper">
+                                            <input type="password" id="openrouter-key-input" placeholder="sk-or-v1...">
+                                            <button class="toggle-password"><i class="fa-solid fa-eye"></i></button>
+                                            <button class="help-button" data-provider="OpenRouter">?</button>
+                                        </div>
+                                    </div>
+                                    <div class="api-key-group">
+                                        <label for="groq-key-input">
+                                            <a href="https://console.groq.com/keys" target="_blank">Groq Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                                        </label>
+                                        <p class="key-description" data-i18n-key="groqDescription">"Sports Car" - Access to the fastest models for instant answers.</p>
+                                        <div class="password-input-wrapper">
+                                            <input type="password" id="groq-key-input" placeholder="gsk_...">
+                                            <button class="toggle-password"><i class="fa-solid fa-eye"></i></button>
+                                            <button class="help-button" data-provider="Groq">?</button>
+                                        </div>
+                                    </div>
+                                    <div class="api-key-group">
+                                        <label for="google-key-input">
+                                            <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                                        </label>
+                                        <p class="key-description" data-i18n-key="googleDescription">"Reliable Helper" - Direct access to Google's Gemini models.</p>
+                                        <div class="password-input-wrapper">
+                                            <input type="password" id="google-key-input" placeholder="AIzaSy...">
+                                            <button class="toggle-password"><i class="fa-solid fa-eye"></i></button>
+                                            <button class="help-button" data-provider="Google">?</button>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                            <div class="settings-column">
+                                <fieldset disabled>
+                                    <legend data-i18n-key="optionalKeys">Optional Direct Access (Coming Soon)</legend>
+                                    <p class="key-description">Space reserved for Anthropic Claude, OpenAI, Mistral, and others.</p>
+                                </fieldset>
+                            </div>
+                        </div>
+
+                    </section>
+                    <footer class="settings-footer">
+                        <button id="save-settings-button" data-i18n-key="saveButton">Save & Start</button>
+                    </footer>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="help-modal" class="modal hidden">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="help-modal-title"></h2>
+                <button id="close-help-modal-button" class="close-button">&times;</button>
+            </header>
+            <section id="help-modal-body" class="modal-body">
+                </section>
+        </div>
+    </div>
+
+    <div id="history-item-menu" class="hidden">
+        <button id="pin-chat-btn"><i class="fa-solid fa-thumbtack"></i> <span data-i18n-key="pinChat">Pin</span></button>
+        <button id="rename-chat-btn"><i class="fa-solid fa-pen-to-square"></i> <span data-i18n-key="renameChat">Rename</span></button>
+        <button id="delete-chat-btn"><i class="fa-solid fa-trash-can"></i> <span data-i18n-key="deleteChat">Delete</span></button>
+    </div>
+
+    <div id="model-selection-modal" class="modal hidden">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 data-i18n-key="modelSelectionTitle">Select a Model</h2>
+                <button id="close-model-selection-button" class="close-button">&times;</button>
+            </header>
+            <section id="model-selection-list" class="modal-body">
+                </section>
+        </div>
+    </div>
+    
+    <input type="file" id="image-input-hidden" class="hidden-input" accept="image/*" multiple="false">
+    <input type="file" id="doc-input-hidden" class="hidden-input" accept=".txt" multiple="false">
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
