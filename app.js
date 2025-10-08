@@ -4,8 +4,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LOKALIZACIJA (i18n) ---
     const translations = {
-        en: { appTitle: "AI Chain", currentModelLabel: "Current:", fallbackModelLabel: "Fallback:", modelSelectionTitle: "Select a Model", messagePlaceholder: "Enter a message...", settingsTitle: "API Key Settings", settingsMotivation: "Connect your free API keys to unlock the full potential of AI Chain. Your keys are stored securely in your browser and never leave your device.", openrouterDescription: `"Universal Key" - Access to dozens of AI models (recommended).`, groqDescription: `"Sports Car" - Access to the fastest models for instant answers.`, googleDescription: `"Reliable Helper" - Direct access to Google's Gemini models.`, economy: "Economy", balanced: "Balanced", power: "Max. Power", saveButton: "Save & Start", notConfigured: "Not Configured", notAvailable: "None", aiThinking: "AI is thinking...", noModelsAvailable: "No AI models available.", limitReachedSwitching: (model) => `Limit reached. Switching to: **${model}**`, welcomeMessage: "Welcome! Start the conversation...", forceSwitchLabel: "Test Next Model", welcomeSlogan: "One chat, all free AI models, uninterrupted.", startChat: "Start Chatting", topModelsTitle: "Today's Top Models", allModelsFailed: "All models failed. Check API keys.", uploadImageTitle: "Upload Image", uploadDocTitle: "Upload Document (.txt)", historyTitle: "History", newChatLabel: "New Chat", newChatTitle: "Start a new conversation", searchHistoryPlaceholder: "Search...", clearHistoryLabel: "Clear History", invalidApiKeyError: (provider) => `Authentication failed for ${provider}. Please check your API key.`, today: "Today", yesterday: "Yesterday", last7Days: "Previous 7 Days", older: "Older", confirmClearHistory: "Delete all chat history? This cannot be undone.", confirmDeleteChat: "Delete this chat? This cannot be undone.", essentialKeys: "Essential", optionalKeys: "Optional Direct Access (Coming Soon)", howToTitle: (provider) => `How to get a ${provider} key?`, helpPlaceholder: "Your AI assistant will prepare a visual guide (GIF) for this process soon. For now, please visit the provider's website to generate a new key and set spending limits to $0.", pinChat: "Pin", renameChat: "Rename", deleteChat: "Delete" },
-        sr: { appTitle: "AI Chain", currentModelLabel: "Trenutni:", fallbackModelLabel: "Rezerva:", modelSelectionTitle: "Odaberi Model", messagePlaceholder: "Unesite poruku...", settingsTitle: "Podešavanja API Ključeva", settingsMotivation: "Povežite vaše besplatne API ključeve da otključate pun potencijal AI Chain-a. Ključevi se čuvaju bezbedno u vašem browseru i nikada ne napuštaju vaš uređaj.", openrouterDescription: `"Univerzalni Ključ" - Pristup desetinama AI modela (preporučeno).`, groqDescription: `"Sportski Auto" - Pristup najbržim modelima za instant odgovore.`, googleDescription: `"Pouzdan Pomoćnik" - Direktan pristup Google Gemini modelima.`, economy: "Štednja", balanced: "Balans", power: "Maks. Snaga", saveButton: "Sačuvaj i Počni", notConfigured: "Nije Konfigurisan", notAvailable: "Nema", aiThinking: "AI razmišlja...", noModelsAvailable: "Nema dostupnih modela.", limitReachedSwitching: (model) => `Limit dostignut. Prebacujem na: **${model}**`, welcomeMessage: "Dobrodošli! Započnite konverzaciju...", forceSwitchLabel: "Testiraj Sledeći Model", welcomeSlogan: "Jedan čet, svi besplatni AI modeli.", startChat: "Započni Razgovor", topModelsTitle: "Današnji Top Modeli", allModelsFailed: "Svi modeli su otkazali. Proverite ključeve.", uploadImageTitle: "Otpremi Sliku", uploadDocTitle: "Otpremi Dokument (.txt)", historyTitle: "Istorija", newChatLabel: "Novi Razgovor", newChatTitle: "Započni novi razgovor", searchHistoryPlaceholder: "Pretraži...", clearHistoryLabel: "Obriši Istoriju", invalidApiKeyError: (provider) => `Autentifikacija za ${provider} nije uspela. Proverite ključ.`, today: "Danas", yesterday: "Juče", last7Days: "Prethodnih 7 dana", older: "Starije", confirmClearHistory: "Obrisati kompletnu istoriju? Ova akcija je nepovratna.", confirmDeleteChat: "Obrisati ovaj razgovor? Akcija je nepovratna.", essentialKeys: "Esencijalni", optionalKeys: "Opcioni direktan pristup (Uskoro)", howToTitle: (provider) => `Kako doći do ${provider} ključa?`, helpPlaceholder: "Vaš AI asistent će uskoro pripremiti vizuelni vodič (GIF) za ovaj proces. Za sada, posetite sajt provajdera da generišete novi ključ i postavite limite potrošnje na $0.", pinChat: "Zakači", renameChat: "Preimenuj", deleteChat: "Obriši" },
+        en: { 
+            appTitle: "AI Chain", currentModelLabel: "Current:", fallbackModelLabel: "Fallback:", modelSelectionTitle: "Select a Model", messagePlaceholder: "Enter a message...", settingsTitle: "API Key Settings", settingsMotivation: "Connect your free API keys to unlock the full potential of AI Chain. Your keys are stored securely in your browser and never leave your device.", openrouterDescription: `"Universal Key" - Access to dozens of AI models (recommended).`, groqDescription: `"Sports Car" - Access to the fastest models for instant answers.`, googleDescription: `"Reliable Helper" - Direct access to Google's Gemini models.`, economy: "Economy", balanced: "Balanced", power: "Max. Power", saveButton: "Save & Start", notConfigured: "Not Configured", notAvailable: "None", aiThinking: "AI is thinking...", noModelsAvailable: "No AI models available.", limitReachedSwitching: (model) => `Limit reached. Switching to: **${model}**`, welcomeMessage: "Welcome! Start the conversation...", forceSwitchLabel: "Test Next Model", welcomeSlogan: "One chat, all free AI models, uninterrupted.", startChat: "Start Chatting", topModelsTitle: "Today's Top Models", allModelsFailed: "All models failed. Check API keys.", uploadImageTitle: "Upload Image", uploadDocTitle: "Upload Document (.txt)", historyTitle: "History", newChatLabel: "New Chat", newChatTitle: "Start a new conversation", searchHistoryPlaceholder: "Search...", clearHistoryLabel: "Clear History", invalidApiKeyError: (provider) => `Authentication failed for ${provider}. Please check your API key.`, today: "Today", yesterday: "Yesterday", last7Days: "Previous 7 Days", older: "Older", confirmClearHistory: "Delete all chat history? This cannot be undone.", confirmDeleteChat: "Delete this chat? This cannot be undone.", 
+            essentialKeys: "Essential", 
+            powerUserKeys: "Premium Power Access", 
+            howToTitle: (provider) => `How to get a ${provider} key?`, helpPlaceholder: "Your AI assistant will prepare a visual guide (GIF) for this process soon. For now, please visit the provider's website to generate a new key and set spending limits to $0.", pinChat: "Pin", renameChat: "Rename", deleteChat: "Delete",
+            openaiDescription: `"Industry Leader" - Access to GPT-4o, GPT-4 Turbo, etc.`,
+            anthropicDescription: `"The Challenger" - Access to the Claude 3.5 Sonnet family.`,
+            cohereDescription: `"The Enterprise Choice" - Access to Command R+ models.`,
+            mistralDescription: `"The European Powerhouse" - Access to Mistral Large.`,
+            alibabaDescription: `"The Tech Giant" - Access to Qwen models.`,
+            zhipuDescription: `"The Competitor" - Access to GLM-4 models.`,
+            moonshotDescription: `"The Context King" - Access to Kimi models.`
+        },
+        sr: { 
+            appTitle: "AI Chain", currentModelLabel: "Trenutni:", fallbackModelLabel: "Rezerva:", modelSelectionTitle: "Odaberi Model", messagePlaceholder: "Unesite poruku...", settingsTitle: "Podešavanja API Ključeva", settingsMotivation: "Povežite vaše besplatne API ključeve da otključate pun potencijal AI Chain-a. Ključevi se čuvaju bezbedno u vašem browseru i nikada ne napuštaju vaš uređaj.", openrouterDescription: `"Univerzalni Ključ" - Pristup desetinama AI modela (preporučeno).`, groqDescription: `"Sportski Auto" - Pristup najbržim modelima za instant odgovore.`, googleDescription: `"Pouzdan Pomoćnik" - Direktan pristup Google Gemini modelima.`, economy: "Štednja", balanced: "Balans", power: "Maks. Snaga", saveButton: "Sačuvaj i Počni", notConfigured: "Nije Konfigurisan", notAvailable: "Nema", aiThinking: "AI razmišlja...", noModelsAvailable: "Nema dostupnih modela.", limitReachedSwitching: (model) => `Limit dostignut. Prebacujem na: **${model}**`, welcomeMessage: "Dobrodošli! Započnite konverzaciju...", forceSwitchLabel: "Testiraj Sledeći Model", welcomeSlogan: "Jedan čet, svi besplatni AI modeli.", startChat: "Započni Razgovor", topModelsTitle: "Današnji Top Modeli", allModelsFailed: "Svi modeli su otkazali. Proverite ključeve.", uploadImageTitle: "Otpremi Sliku", uploadDocTitle: "Otpremi Dokument (.txt)", historyTitle: "Istorija", newChatLabel: "Novi Razgovor", newChatTitle: "Započni novi razgovor", searchHistoryPlaceholder: "Pretraži...", clearHistoryLabel: "Obriši Istoriju", invalidApiKeyError: (provider) => `Autentifikacija za ${provider} nije uspela. Proverite ključ.`, today: "Danas", yesterday: "Juče", last7Days: "Prethodnih 7 dana", older: "Starije", confirmClearHistory: "Obrisati kompletnu istoriju? Ova akcija je nepovratna.", confirmDeleteChat: "Obrisati ovaj razgovor? Akcija je nepovratna.", 
+            essentialKeys: "Esencijalni", 
+            powerUserKeys: "Premium Power Pristup", 
+            howToTitle: (provider) => `Kako doći do ${provider} ključa?`, helpPlaceholder: "Vaš AI asistent će uskoro pripremiti vizuelni vodič (GIF) za ovaj proces. Za sada, posetite sajt provajdera da generišete novi ključ i postavite limite potrošnje na $0.", pinChat: "Zakači", renameChat: "Preimenuj", deleteChat: "Obriši",
+            openaiDescription: `"Industrijski Lider" - Pristup GPT-4o, GPT-4 Turbo, itd.`,
+            anthropicDescription: `"Izazivač" - Pristup Claude 3.5 Sonnet familiji.`,
+            cohereDescription: `"Poslovni Izbor" - Pristup Command R+ modelima.`,
+            mistralDescription: `"Evropska Sila" - Pristup Mistral Large modelu.`,
+            alibabaDescription: `"Tehnološki Gigant" - Pristup Qwen modelima.`,
+            zhipuDescription: `"Konkurent" - Pristup GLM-4 modelima.`,
+            moonshotDescription: `"Kralj Konteksta" - Pristup Kimi modelima.`
+        },
     };
 
     // --- ELEMENTI ---
@@ -34,9 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageInputHidden = getEl('image-input-hidden');
     const docInputHidden = getEl('doc-input-hidden');
     const filePreviewContainer = getEl('file-preview-container');
-    const openRouterKeyInput = getEl('openrouter-key-input');
-    const groqKeyInput = getEl('groq-key-input');
-    const googleKeyInput = getEl('google-key-input');
     const intelligenceSlider = getEl('intelligence-slider');
     const messageForm = getEl('message-form');
     const messageInput = getEl('message-input');
@@ -55,6 +76,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const modelSelectionModal = getEl('model-selection-modal');
     const modelSelectionList = getEl('model-selection-list');
     const closeModelSelectionButton = getEl('close-model-selection-button');
+
+    // Inputi za API ključeve
+    const openRouterKeyInput = getEl('openrouter-key-input');
+    const groqKeyInput = getEl('groq-key-input');
+    const googleKeyInput = getEl('google-key-input');
+    const openaiKeyInput = getEl('openai-key-input');
+    const anthropicKeyInput = getEl('anthropic-key-input');
+    const cohereKeyInput = getEl('cohere-key-input');
+    const mistralKeyInput = getEl('mistral-key-input');
+    const alibabaKeyInput = getEl('alibaba-key-input');
+    const zhipuKeyInput = getEl('zhipu-key-input');
+    const moonshotKeyInput = getEl('moonshot-key-input');
     
     // --- STANJE Aplikacije ---
     let apiKeys = {};
@@ -71,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeContextMenuChatId = null;
 
     // --- FUNKCIJE ---
-
     function setLanguage(lang) {
         currentLang = lang;
         localStorage.setItem('preferredLanguage', lang);
@@ -84,9 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const titleKey = el.dataset.i18nTitleKey;
             
             const targetKey = key || placeholderKey || titleKey;
-            if (!targetKey || !trans[targetKey]) return;
+            const translationSet = { ...translations.en, ...trans };
+            if (!targetKey || !translationSet[targetKey]) return;
 
-            const translation = typeof trans[targetKey] === 'function' ? trans[targetKey]('') : trans[targetKey];
+            const translation = typeof translationSet[targetKey] === 'function' ? translationSet[targetKey]('') : translationSet[targetKey];
 
             if (placeholderKey) el.placeholder = translation;
             else if (titleKey) el.title = translation;
@@ -173,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function updateModelStatus() {
-        const trans = translations[currentLang] || translations.en;
+        const trans = { ...translations.en, ...translations[currentLang] };
         if (currentModelStrategy.length > 0 && currentModelIndex < currentModelStrategy.length) {
             const current = currentModelStrategy[currentModelIndex];
             currentModelNameEl.textContent = `${current.id}`;
@@ -231,6 +264,14 @@ document.addEventListener('DOMContentLoaded', () => {
         openRouterKeyInput.value = apiKeys.openrouter || '';
         groqKeyInput.value = apiKeys.groq || '';
         googleKeyInput.value = apiKeys.google || '';
+        openaiKeyInput.value = apiKeys.openai || '';
+        anthropicKeyInput.value = apiKeys.anthropic || '';
+        cohereKeyInput.value = apiKeys.cohere || '';
+        mistralKeyInput.value = apiKeys.mistral || '';
+        alibabaKeyInput.value = apiKeys.alibaba || '';
+        zhipuKeyInput.value = apiKeys.zhipu || '';
+        moonshotKeyInput.value = apiKeys.moonshot || '';
+        
         intelligenceSlider.value = localStorage.getItem('intelligenceSlider') || '100';
     }
     
@@ -238,6 +279,14 @@ document.addEventListener('DOMContentLoaded', () => {
         apiKeys.openrouter = openRouterKeyInput.value.trim();
         apiKeys.groq = groqKeyInput.value.trim();
         apiKeys.google = googleKeyInput.value.trim();
+        apiKeys.openai = openaiKeyInput.value.trim();
+        apiKeys.anthropic = anthropicKeyInput.value.trim();
+        apiKeys.cohere = cohereKeyInput.value.trim();
+        apiKeys.mistral = mistralKeyInput.value.trim();
+        apiKeys.alibaba = alibabaKeyInput.value.trim();
+        apiKeys.zhipu = zhipuKeyInput.value.trim();
+        apiKeys.moonshot = moonshotKeyInput.value.trim();
+
         localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
         localStorage.setItem('intelligenceSlider', intelligenceSlider.value);
         updateModelStrategy();
@@ -385,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function renderHistorySidebar(filter = '') {
         historyList.innerHTML = '';
-        const trans = translations[currentLang] || translations.en;
+        const trans = { ...translations.en, ...translations[currentLang] };
         const filteredChats = allChats
             .filter(chat => chat.title.toLowerCase().includes(filter.toLowerCase()));
 
@@ -567,7 +616,8 @@ document.addEventListener('DOMContentLoaded', () => {
     historySearchInput.addEventListener('input', () => renderHistorySidebar(historySearchInput.value));
     
     clearHistoryButton.addEventListener('click', () => {
-        if (confirm(translations[currentLang]?.confirmClearHistory)) {
+        const trans = { ...translations.en, ...translations[currentLang] };
+        if (confirm(trans.confirmClearHistory)) {
             allChats = [];
             localStorage.removeItem('ai-chain-all-chats');
             startNewChat();
@@ -596,7 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.help-button').forEach(button => {
         button.addEventListener('click', (e) => {
             const provider = e.currentTarget.dataset.provider;
-            const trans = translations[currentLang] || translations.en;
+            const trans = { ...translations.en, ...translations[currentLang] };
             helpModalTitle.textContent = trans.howToTitle(provider);
             helpModalBody.textContent = trans.helpPlaceholder;
             helpModal.classList.remove('hidden');
@@ -662,7 +712,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renameChatBtn.addEventListener('click', () => {
         const chat = allChats.find(c => c.id === activeContextMenuChatId);
         if (chat) {
-            const newTitle = prompt(translations[currentLang].renameChat || 'Rename chat', chat.title);
+            const trans = { ...translations.en, ...translations[currentLang] };
+            const newTitle = prompt(trans.renameChat, chat.title);
             if (newTitle && newTitle.trim() !== '') {
                 chat.title = newTitle.trim();
                 saveAllChats();
@@ -673,7 +724,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     deleteChatBtn.addEventListener('click', () => {
-        if (confirm(translations[currentLang].confirmDeleteChat)) {
+        const trans = { ...translations.en, ...translations[currentLang] };
+        if (confirm(trans.confirmDeleteChat)) {
             allChats = allChats.filter(c => c.id !== activeContextMenuChatId);
             saveAllChats();
             
