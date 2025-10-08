@@ -127,12 +127,13 @@
             <div id="settings-page" class="hidden">
                 <div class="settings-content">
                     <header class="settings-header">
-                        <h2 data-i18n-key="settingsTitle">API Key Settings</h2>
+                        <div>
+                            <h2 data-i18n-key="settingsTitle">API Key Settings</h2>
+                            <p class="settings-motivation" data-i18n-key="settingsMotivation">Connect your free API keys to unlock the full potential of AI Chain. Your keys are stored securely in your browser and never leave your device.</p>
+                        </div>
                         <button id="close-settings-button" class="close-button">&times;</button>
                     </header>
                     <section class="settings-body">
-                        <p class="settings-motivation" data-i18n-key="settingsMotivation">Connect your free API keys to unlock the full potential of AI Chain. Your keys are stored securely in your browser and never leave your device.</p>
-                        
                         <div class="settings-layout">
                             <div class="settings-column">
                                 <fieldset>
@@ -159,23 +160,51 @@
                                             <button class="help-button" data-provider="Groq">?</button>
                                         </div>
                                     </div>
-                                    <div class="api-key-group">
-                                        <label for="google-key-input">
-                                            <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                                        </label>
-                                        <p class="key-description" data-i18n-key="googleDescription">"Reliable Helper" - Direct access to Google's Gemini models.</p>
-                                        <div class="password-input-wrapper">
-                                            <input type="password" id="google-key-input" placeholder="AIzaSy...">
-                                            <button class="toggle-password"><i class="fa-solid fa-eye"></i></button>
-                                            <button class="help-button" data-provider="Google">?</button>
-                                        </div>
-                                    </div>
                                 </fieldset>
                             </div>
                             <div class="settings-column">
-                                <fieldset disabled>
-                                    <legend data-i18n-key="optionalKeys">Optional Direct Access (Coming Soon)</legend>
-                                    <p class="key-description">Space reserved for Anthropic Claude, OpenAI, Mistral, and others.</p>
+                                <fieldset>
+                                    <legend data-i18n-key="powerUserKeys">Premium Power Pristup</legend>
+                                    <div class="api-key-group">
+                                        <label for="google-key-input"><a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
+                                        <p class="key-description" data-i18n-key="googleDescription">"Reliable Helper" - Direct access to Google's Gemini models.</p>
+                                        <div class="password-input-wrapper"><input type="password" id="google-key-input" placeholder="AIzaSy..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Google">?</button></div>
+                                    </div>
+                                    <div class="api-key-group">
+                                        <label for="openai-key-input"><a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
+                                        <p class="key-description" data-i18n-key="openaiDescription">"Industry Leader" - Access to GPT-4o, GPT-4 Turbo, etc.</p>
+                                        <div class="password-input-wrapper"><input type="password" id="openai-key-input" placeholder="sk-..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="OpenAI">?</button></div>
+                                    </div>
+                                    <div class="api-key-group">
+                                        <label for="anthropic-key-input"><a href="https://console.anthropic.com/dashboard" target="_blank">Anthropic Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
+                                        <p class="key-description" data-i18n-key="anthropicDescription">"The Challenger" - Access to the Claude 3.5 Sonnet family.</p>
+                                        <div class="password-input-wrapper"><input type="password" id="anthropic-key-input" placeholder="sk-ant-..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Anthropic">?</button></div>
+                                    </div>
+                                     <div class="api-key-group">
+                                        <label for="cohere-key-input"><a href="https://dashboard.cohere.com/api-keys" target="_blank">Cohere Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
+                                        <p class="key-description" data-i18n-key="cohereDescription">"The Enterprise Choice" - Access to Command R+ models.</p>
+                                        <div class="password-input-wrapper"><input type="password" id="cohere-key-input" placeholder="..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Cohere">?</button></div>
+                                    </div>
+                                    <div class="api-key-group">
+                                        <label for="mistral-key-input"><a href="https://console.mistral.ai/" target="_blank">Mistral Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
+                                        <p class="key-description" data-i18n-key="mistralDescription">"The European Powerhouse" - Access to Mistral Large.</p>
+                                        <div class="password-input-wrapper"><input type="password" id="mistral-key-input" placeholder="..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Mistral">?</button></div>
+                                    </div>
+                                     <div class="api-key-group">
+                                        <label for="alibaba-key-input"><a href="https://www.alibabacloud.com/product/model-studio" target="_blank">Alibaba Cloud Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
+                                        <p class="key-description" data-i18n-key="alibabaDescription">"The Tech Giant" - Access to Qwen models.</p>
+                                        <div class="password-input-wrapper"><input type="password" id="alibaba-key-input" placeholder="..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Alibaba">?</button></div>
+                                    </div>
+                                    <div class="api-key-group">
+                                        <label for="zhipu-key-input"><a href="https://open.bigmodel.cn/" target="_blank">Zhipu AI Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
+                                        <p class="key-description" data-i18n-key="zhipuDescription">"The Competitor" - Access to GLM-4 models.</p>
+                                        <div class="password-input-wrapper"><input type="password" id="zhipu-key-input" placeholder="..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Zhipu">?</button></div>
+                                    </div>
+                                    <div class="api-key-group">
+                                        <label for="moonshot-key-input"><a href="https://platform.moonshot.cn/console/api-keys" target="_blank">Moonshot AI Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
+                                        <p class="key-description" data-i18n-key="moonshotDescription">"The Context King" - Access to Kimi models.</p>
+                                        <div class="password-input-wrapper"><input type="password" id="moonshot-key-input" placeholder="..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Moonshot">?</button></div>
+                                    </div>
                                 </fieldset>
                             </div>
                         </div>
