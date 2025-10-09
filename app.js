@@ -161,23 +161,181 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('https://openrouter.ai/api/v1/models');
             if (!response.ok) throw new Error('Failed to fetch model rankings');
             const { data } = await response.json();
-            const allModels = data;
+            const allModels = data.map(model => {
+                if (model.id.includes('groq')) {
+                    model.provider = 'groq';
+                } else if (model.id.startsWith('google/')) {
+                    model.provider = 'google';
+                } else {
+                    model.provider = 'openrouter';
+                }
+                return model;
+            });
 
             const topModels = allModels.sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0)).slice(0, 15);
             modelRankingList.innerHTML = [...topModels, ...topModels].map(model => `<li><strong>${model.id.split('/')[0]}</strong> / ${model.id.split('/')[1]}</li>`).join('');
 
             const alwaysFreeModels = allModels.filter(m => (m.pricing.prompt === "0.000000" && m.pricing.completion === "0.000000") || m.id.endsWith(':free')).sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0));
-            const validWhitelist = freemiumWhitelist.map(id => allModels.find(m => m.id === id)).filter(Boolean);
+            const validWhitelist = freemiumWhitelist.map(id => allModels.find(m => m.id === id)).filter(Boolean).map(model => {
+                model.provider = 'openrouter';
+                return model;
+            });
             
             dynamicStrategies.power = [...new Set([...validWhitelist, ...alwaysFreeModels])];
-            const groqModels = alwaysFreeModels.filter(m => m.id.includes('groq'));
-            const otherFreeModels = alwaysFreeModels.filter(m => !m.id.includes('groq'));
+            const groqModels = alwaysFreeModels.filter(m => m.provider === 'groq');
+            const otherFreeModels = alwaysFreeModels.filter(m => m.provider !== 'groq');
             dynamicStrategies.balanced = [...new Set([...groqModels, ...validWhitelist, ...otherFreeModels])];
             dynamicStrategies.economy = [...alwaysFreeModels];
         } catch (error) {
             console.error("Could not build dynamic strategies.", error);
             dynamicStrategies = {};
         }
+    }
+    
+    function updateModelStrategy() {
+        const sliderValue = parseInt(intelligenceSlider.value, 10);
+        let strategyKey = sliderValue <= 33 ? 'economy' : (sliderValue >= 67 ? 'power' : 'balanced');
+        
+        let newStrategy = [];
+
+        // Layer 1: Premium Power Access (ako nije 'Economy')
+        if (strategyKey !== 'economy') {
+            if (apiKeys.openai) {
+                newStrategy.push({ id: 'gpt-4o', provider: 'openai', architecture: { modality: 'multimodal' } });
+            }
+            if (apiKeys.anthropic) {
+                newStrategy.push({ id: 'claude-3-5-sonnet-20240620', provider: 'anthropic', architecture: { modality: 'multimodal' } });
+            }
+            // Ovde će doći provere za Cohere, Mistral, itd. u budućim fazama
+        }
+
+        // Layer 2 & 3: Fallback na OpenRouter / Groq / Google
+        if (dynamicStrategies[strategyKey]) {
+            const fallbackStrategy = dynamicStrategies[strategyKey].filter(modelInfo => {
+                // Ne dodaj duplikate ako već imamo direktan ključ
+                if (modelInfo.provider === 'openai' && apiKeys.openai) return false;
+                if (modelInfo.provider === 'anthropic' && apiKeys.anthropic) return false;
+                
+                const requiredKey = modelInfo.provider === 'openrouter' ? 'openrouter' : modelInfo.provider;
+                return apiKeys[requiredKey];
+            });
+            newStrategy.push(...fallbackStrategy);
+        }
+
+        currentModelStrategy = newStrategy;
+        currentModelIndex = 0;
+        updateModelStatus();
+    }
+    
+    async function getAiResponse(userMessage) {
+        if (currentModelStrategy.length === 0) {
+            displayMessage(translations[currentLang].noModelsAvailable, "ai-system");
+            return;
+        }
+        isAIThinking = true;
+        const typingIndicator = displayTypingIndicator();
+        
+        let contentForApi = [];
+        if (attachedFile?.type === 'image') contentForApi.push({ type: 'image_url', image_url: { url: attachedFile.data } });
+        
+        let finalUserMessage = userMessage;
+        if (attachedFile?.type === 'doc') {
+            finalUserMessage = `Based on the document:\n---\n${attachedFile.content}\n---\n\nMy question: ${userMessage}`;
+        }
+        if(finalUserMessage) contentForApi.push({ type: 'text', text: finalUserMessage });
+
+        const historyEntry = { role: 'user', content: (contentForApi.length === 1 && contentForApi[0].type === 'text') ? finalUserMessage : contentForApi, fileInfo: attachedFile };
+        const currentChat = allChats.find(c => c.id === currentChatId);
+        currentChat.messages.push(historyEntry);
+
+        let success = false;
+        while (!success) {
+            const currentAttempt = currentModelStrategy[currentModelIndex];
+            if (!currentAttempt) { 
+                displayMessage(translations[currentLang].allModelsFailed, 'ai-system'); 
+                break; 
+            }
+            
+            const { id: model, provider } = currentAttempt;
+            const apiKey = apiKeys[provider];
+
+            try {
+                let endpoint = '';
+                let headers = {};
+                let body = {};
+                
+                const messagesForApi = currentChat.messages.map(({role, content}) => ({role, content}));
+
+                switch (provider) {
+                    case 'openai':
+                        endpoint = 'https://api.openai.com/v1/chat/completions';
+                        headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
+                        body = { model: model, messages: messagesForApi, max_tokens: 4096 };
+                        break;
+                    
+                    case 'anthropic':
+                        endpoint = 'https://api.anthropic.com/v1/messages';
+                        headers = {
+                            'x-api-key': apiKey,
+                            'anthropic-version': '2023-06-01',
+                            'content-type': 'application/json'
+                        };
+                        body = { model: model, messages: messagesForApi, max_tokens: 4096 };
+                        break;
+
+                    case 'groq':
+                        endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                        headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
+                        body = { model: model, messages: messagesForApi };
+                        break;
+                    
+                    case 'google':
+                    case 'openrouter':
+                    default:
+                        endpoint = 'https://openrouter.ai/api/v1/chat/completions';
+                        headers = { 
+                            'Authorization': `Bearer ${apiKeys.openrouter}`, 
+                            'Content-Type': 'application/json'
+                        };
+                        body = { model: model, messages: messagesForApi };
+                        break;
+                }
+                
+                const response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body) });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    if(response.status === 401) throw new Error(`Status 401 for ${provider}: ${errorData.error?.message || 'Invalid API Key'}`);
+                    throw new Error(`Status ${response.status} for ${provider}: ${errorData.error?.message || JSON.stringify(errorData)}`);
+                }
+
+                const data = await response.json();
+                let aiMessage = "No response.";
+                if (provider === 'anthropic') {
+                    aiMessage = data.content?.[0]?.text || "No valid response content.";
+                } else { // OpenAI, Groq, OpenRouter
+                    aiMessage = data.choices?.[0]?.message?.content || "No valid response choice.";
+                }
+
+                currentChat.messages.push({ role: 'assistant', content: aiMessage });
+                displayMessage(aiMessage, 'ai');
+                success = true;
+
+            } catch (error) {
+                console.error(`Error with ${model} via ${provider}:`, error);
+                if (error.message.includes('Status 401')){
+                    displayMessage(translations[currentLang].invalidApiKeyError(provider), 'ai-system');
+                } 
+                
+                if (!handleModelSwitch()) {
+                    break; 
+                }
+            }
+        }
+        typingIndicator?.remove();
+        isAIThinking = false;
+        attachedFile = null;
+        filePreviewContainer.innerHTML = '';
     }
 
     function handleModelSwitch(force = false) {
@@ -190,35 +348,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!force) displayMessage(translations[currentLang].allModelsFailed, "ai-system");
         return false;
     }
-
-    function updateModelStrategy() {
-        const sliderValue = parseInt(intelligenceSlider.value, 10);
-        let strategyKey = sliderValue <= 33 ? 'economy' : (sliderValue >= 67 ? 'power' : 'balanced');
-        
-        currentModelStrategy = (dynamicStrategies[strategyKey] || []).filter(modelInfo => {
-            let provider = 'openrouter';
-            if (modelInfo.id.includes('groq')) provider = 'groq';
-            else if (modelInfo.id.startsWith('google/')) provider = 'google';
-            return apiKeys[provider] && apiKeys[provider] !== '';
-        });
-        currentModelIndex = 0;
-        updateModelStatus();
-    }
     
     function updateModelStatus() {
         const trans = { ...translations.en, ...translations[currentLang] };
         if (currentModelStrategy.length > 0 && currentModelIndex < currentModelStrategy.length) {
             const current = currentModelStrategy[currentModelIndex];
-            currentModelNameEl.textContent = `${current.id}`;
+            currentModelNameEl.textContent = `${current.provider}/${current.id}`;
             
             const fallbacks = currentModelStrategy.slice(currentModelIndex + 1, currentModelIndex + 3);
             if (fallbacks.length > 0) {
-                fallbackModelsListEl.textContent = fallbacks.map(m => m.id.split('/')[1]).join(', ');
+                fallbackModelsListEl.textContent = fallbacks.map(m => m.id.split('/')[1] || m.id).join(', ');
             } else {
                 fallbackModelsListEl.textContent = trans.notAvailable;
             }
 
-            const isMultimodal = current.architecture?.modality === 'multimodal' || current.id.includes('vision') || current.id.includes('claude-3');
+            const isMultimodal = current.architecture?.modality === 'multimodal' || current.id.includes('vision') || current.id.includes('claude-3') || current.id.includes('gpt-4o');
             uploadImageButton.disabled = !isMultimodal;
             uploadDocButton.disabled = false;
         } else {
@@ -340,71 +484,6 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.readAsDataURL(file);
         }
         event.target.value = null;
-    }
-
-    async function getAiResponse(userMessage) {
-        if (currentModelStrategy.length === 0) {
-            displayMessage(translations[currentLang].noModelsAvailable, "ai-system");
-            return;
-        }
-        isAIThinking = true;
-        const typingIndicator = displayTypingIndicator();
-        
-        let contentForApi = [];
-        if (attachedFile?.type === 'image') contentForApi.push({ type: 'image_url', image_url: { url: attachedFile.data } });
-        
-        let finalUserMessage = userMessage;
-        if (attachedFile?.type === 'doc') {
-            finalUserMessage = `Based on the document:\n---\n${attachedFile.content}\n---\n\nMy question: ${userMessage}`;
-        }
-        if(finalUserMessage) contentForApi.push({ type: 'text', text: finalUserMessage });
-
-        const historyEntry = { role: 'user', content: (contentForApi.length === 1 && contentForApi[0].type === 'text') ? finalUserMessage : contentForApi, fileInfo: attachedFile };
-        const currentChat = allChats.find(c => c.id === currentChatId);
-        currentChat.messages.push(historyEntry);
-
-        const startingModelIndex = currentModelIndex;
-        let success = false;
-        while (!success) {
-            const currentAttempt = currentModelStrategy[currentModelIndex];
-            if (!currentAttempt) { displayMessage(translations[currentLang].allModelsFailed, 'ai-system'); break; }
-            
-            const model = currentAttempt.id;
-            let provider = 'openrouter';
-            if (model.includes('groq')) provider = 'groq';
-            else if (model.startsWith('google/')) provider = 'google';
-            const apiKey = apiKeys[provider];
-
-            try {
-                const endpoint = provider === 'groq' ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions';
-                const headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
-                const body = { model: model, messages: currentChat.messages.map(({role, content}) => ({role, content})) };
-                
-                const response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body) });
-                if (!response.ok) {
-                    if(response.status === 401) throw new Error(`Status 401: Invalid API Key for ${provider}.`);
-                    const errorData = await response.json();
-                    throw new Error(`Status ${response.status}: ${errorData.error?.message || JSON.stringify(errorData)}`);
-                }
-                const data = await response.json();
-                const aiMessage = data.choices?.[0]?.message?.content || "No response.";
-                currentChat.messages.push({ role: 'assistant', content: aiMessage });
-                displayMessage(aiMessage, 'ai');
-                success = true;
-            } catch (error) {
-                console.error(`Error with ${model}:`, error);
-                if (error.message.includes('Status 401')){
-                    displayMessage(translations[currentLang].invalidApiKeyError(provider), 'ai-system');
-                    break;
-                } else if (!handleModelSwitch() || currentModelIndex === startingModelIndex) {
-                    break; 
-                }
-            }
-        }
-        typingIndicator?.remove();
-        isAIThinking = false;
-        attachedFile = null;
-        filePreviewContainer.innerHTML = '';
     }
 
     async function handleFormSubmit(e) {
