@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LOKALIZACIJA (i18n) ---
     const translations = {
         en: { 
-            appTitle: "AI Chain", currentModelLabel: "Current:", fallbackModelLabel: "Fallback:", modelSelectionTitle: "Select a Model", messagePlaceholder: "Enter a message...", settingsTitle: "API Key Settings", settingsMotivation: "Connect your free API keys to unlock the full potential of AI Chain. Your keys are stored securely in your browser and never leave your device.", openrouterDescription: `"Universal Key" - Access to dozens of AI models (recommended).`, groqDescription: `"Sports Car" - Access to the fastest models for instant answers.`, googleDescription: `"Reliable Helper" - Direct access to Google's Gemini models.`, economy: "Economy", balanced: "Balanced", power: "Max. Power", saveButton: "Save & Start", notConfigured: "Not Configured", notAvailable: "None", aiThinking: "AI is thinking...", noModelsAvailable: "No AI models available.", limitReachedSwitching: (model) => `Limit reached. Switching to: **${model}**`, welcomeMessage: "Welcome! Start the conversation...", forceSwitchLabel: "Test Next Model", welcomeSlogan: "One chat, all free AI models, uninterrupted.", startChat: "Start Chatting", topModelsTitle: "Today's Top Models", allModelsFailed: "All models failed. Check API keys.", uploadImageTitle: "Upload Image", uploadDocTitle: "Upload Document (.txt)", historyTitle: "History", newChatLabel: "New Chat", newChatTitle: "Start a new conversation", searchHistoryPlaceholder: "Search...", clearHistoryLabel: "Clear History", invalidApiKeyError: (provider) => `Authentication failed for ${provider}. Please check your API key.`, today: "Today", yesterday: "Yesterday", last7Days: "Previous 7 Days", older: "Older", confirmClearHistory: "Delete all chat history? This cannot be undone.", confirmDeleteChat: "Delete this chat? This cannot be undone.", 
+            appTitle: "AI Chain", currentModelLabel: "Current:", fallbackModelLabel: "Fallback:", modelSelectionTitle: "Select a Model", messagePlaceholder: "Enter a message...", settingsTitle: "API Key Settings", settingsMotivation: "Connect your free API keys to unlock the full potential of AI Chain. Your keys are stored securely in your browser and never leave your device.", openrouterDescription: `"Universal Key" - Access to dozens of AI models (recommended).`, groqDescription: `"Sports Car" - Access to the fastest models for instant answers.`, googleDescription: `"Reliable Helper" - Direct access to Google's Gemini models.`, economy: "Economy", balanced: "Balanced", power: "Max. Power", saveButton: "Save & Start", notConfigured: "Not Configured", notAvailable: "None", aiThinking: "AI is thinking...", noModelsAvailable: "No AI models available.", welcomeMessage: "Welcome! Start the conversation...", forceSwitchLabel: "Test Next Model", welcomeSlogan: "One chat, all free AI models, uninterrupted.", startChat: "Start Chatting", topModelsTitle: "Today's Top Models", allModelsFailed: "All available models failed. Please check your API keys or network connection.", uploadImageTitle: "Upload Image", uploadDocTitle: "Upload Document (.txt)", historyTitle: "History", newChatLabel: "New Chat", newChatTitle: "Start a new conversation", searchHistoryPlaceholder: "Search...", clearHistoryLabel: "Clear History", invalidApiKeyError: (provider) => `Authentication failed for ${provider}. Please check your API key.`, today: "Today", yesterday: "Yesterday", last7Days: "Previous 7 Days", older: "Older", confirmClearHistory: "Delete all chat history? This cannot be undone.", confirmDeleteChat: "Delete this chat? This cannot be undone.", 
             essentialKeys: "Essential", 
             powerUserKeys: "Premium Power Access", 
             howToTitle: (provider) => `How to get a ${provider} key?`, helpPlaceholder: "Your AI assistant will prepare a visual guide (GIF) for this process soon. For now, please visit the provider's website to generate a new key and set spending limits to $0.", pinChat: "Pin", renameChat: "Rename", deleteChat: "Delete",
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
             moonshotDescription: `"The Context King" - Access to Kimi models.`
         },
         sr: { 
-            appTitle: "AI Chain", currentModelLabel: "Trenutni:", fallbackModelLabel: "Rezerva:", modelSelectionTitle: "Odaberi Model", messagePlaceholder: "Unesite poruku...", settingsTitle: "Podešavanja API Ključeva", settingsMotivation: "Povežite vaše besplatne API ključeve da otključate pun potencijal AI Chain-a. Ključevi se čuvaju bezbedno u vašem browseru i nikada ne napuštaju vaš uređaj.", openrouterDescription: `"Univerzalni Ključ" - Pristup desetinama AI modela (preporučeno).`, groqDescription: `"Sportski Auto" - Pristup najbržim modelima za instant odgovore.`, googleDescription: `"Pouzdan Pomoćnik" - Direktan pristup Google Gemini modelima.`, economy: "Štednja", balanced: "Balans", power: "Maks. Snaga", saveButton: "Sačuvaj i Počni", notConfigured: "Nije Konfigurisan", notAvailable: "Nema", aiThinking: "AI razmišlja...", noModelsAvailable: "Nema dostupnih modela.", limitReachedSwitching: (model) => `Limit dostignut. Prebacujem na: **${model}**`, welcomeMessage: "Dobrodošli! Započnite konverzaciju...", forceSwitchLabel: "Testiraj Sledeći Model", welcomeSlogan: "Jedan čet, svi besplatni AI modeli.", startChat: "Započni Razgovor", topModelsTitle: "Današnji Top Modeli", allModelsFailed: "Svi modeli su otkazali. Proverite ključeve.", uploadImageTitle: "Otpremi Sliku", uploadDocTitle: "Otpremi Dokument (.txt)", historyTitle: "Istorija", newChatLabel: "Novi Razgovor", newChatTitle: "Započni novi razgovor", searchHistoryPlaceholder: "Pretraži...", clearHistoryLabel: "Obriši Istoriju", invalidApiKeyError: (provider) => `Autentifikacija za ${provider} nije uspela. Proverite ključ.`, today: "Danas", yesterday: "Juče", last7Days: "Prethodnih 7 dana", older: "Starije", confirmClearHistory: "Obrisati kompletnu istoriju? Ova akcija je nepovratna.", confirmDeleteChat: "Obrisati ovaj razgovor? Akcija je nepovratna.", 
+            appTitle: "AI Chain", currentModelLabel: "Trenutni:", fallbackModelLabel: "Rezerva:", modelSelectionTitle: "Odaberi Model", messagePlaceholder: "Unesite poruku...", settingsTitle: "Podešavanja API Ključeva", settingsMotivation: "Povežite vaše besplatne API ključeve da otključate pun potencijal AI Chain-a. Ključevi se čuvaju bezbedno u vašem browseru i nikada ne napuštaju vaš uređaj.", openrouterDescription: `"Univerzalni Ključ" - Pristup desetinama AI modela (preporučeno).`, groqDescription: `"Sportski Auto" - Pristup najbržim modelima za instant odgovore.`, googleDescription: `"Pouzdan Pomoćnik" - Direktan pristup Google Gemini modelima.`, economy: "Štednja", balanced: "Balans", power: "Maks. Snaga", saveButton: "Sačuvaj i Počni", notConfigured: "Nije Konfigurisan", notAvailable: "Nema", aiThinking: "AI razmišlja...", noModelsAvailable: "Nema dostupnih modela.", welcomeMessage: "Dobrodošli! Započnite konverzaciju...", forceSwitchLabel: "Testiraj Sledeći Model", welcomeSlogan: "Jedan čet, svi besplatni AI modeli.", startChat: "Započni Razgovor", topModelsTitle: "Današnji Top Modeli", allModelsFailed: "Svi dostupni modeli su otkazali. Proverite API ključeve ili internet konekciju.", uploadImageTitle: "Otpremi Sliku", uploadDocTitle: "Otpremi Dokument (.txt)", historyTitle: "Istorija", newChatLabel: "Novi Razgovor", newChatTitle: "Započni novi razgovor", searchHistoryPlaceholder: "Pretraži...", clearHistoryLabel: "Obriši Istoriju", invalidApiKeyError: (provider) => `Autentifikacija za ${provider} nije uspela. Proverite ključ.`, today: "Danas", yesterday: "Juče", last7Days: "Prethodnih 7 dana", older: "Starije", confirmClearHistory: "Obrisati kompletnu istoriju? Ova akcija je nepovratna.", confirmDeleteChat: "Obrisati ovaj razgovor? Akcija je nepovratna.", 
             essentialKeys: "Esencijalni", 
             powerUserKeys: "Premium Power Pristup", 
             howToTitle: (provider) => `Kako doći do ${provider} ključa?`, helpPlaceholder: "Vaš AI asistent će uskoro pripremiti vizuelni vodič (GIF) za ovaj proces. Za sada, posetite sajt provajdera da generišete novi ključ i postavite limite potrošnje na $0.", pinChat: "Zakači", renameChat: "Preimenuj", deleteChat: "Obriši",
@@ -198,7 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let newStrategy = [];
 
-        // Layer 1: Premium Power Access (ako nije 'Economy')
         if (strategyKey !== 'economy') {
             if (apiKeys.openai) {
                 newStrategy.push({ id: 'gpt-4o', provider: 'openai', architecture: { modality: 'multimodal' } });
@@ -206,15 +205,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (apiKeys.anthropic) {
                 newStrategy.push({ id: 'claude-3-5-sonnet-20240620', provider: 'anthropic', architecture: { modality: 'multimodal' } });
             }
-            // Ovde će doći provere za Cohere, Mistral, itd. u budućim fazama
+            if (apiKeys.cohere) {
+                newStrategy.push({ id: 'command-a-03-2025', provider: 'cohere', architecture: { modality: 'multimodal' } });
+            }
         }
 
-        // Layer 2 & 3: Fallback na OpenRouter / Groq / Google
         if (dynamicStrategies[strategyKey]) {
             const fallbackStrategy = dynamicStrategies[strategyKey].filter(modelInfo => {
-                // Ne dodaj duplikate ako već imamo direktan ključ
-                if (modelInfo.provider === 'openai' && apiKeys.openai) return false;
-                if (modelInfo.provider === 'anthropic' && apiKeys.anthropic) return false;
+                if ((modelInfo.provider === 'openai' && apiKeys.openai) ||
+                    (modelInfo.provider === 'anthropic' && apiKeys.anthropic) ||
+                    (modelInfo.provider === 'cohere' && apiKeys.cohere)) {
+                    return false;
+                }
                 
                 const requiredKey = modelInfo.provider === 'openrouter' ? 'openrouter' : modelInfo.provider;
                 return apiKeys[requiredKey];
@@ -275,12 +277,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     case 'anthropic':
                         endpoint = 'https://api.anthropic.com/v1/messages';
-                        headers = {
-                            'x-api-key': apiKey,
-                            'anthropic-version': '2023-06-01',
-                            'content-type': 'application/json'
-                        };
+                        headers = { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' };
                         body = { model: model, messages: messagesForApi, max_tokens: 4096 };
+                        break;
+
+                    case 'cohere':
+                        endpoint = 'https://api.cohere.com/v1/chat';
+                        headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
+                        const cohereMessages = messagesForApi.slice(0, -1).map(msg => ({ role: msg.role === 'user' ? 'USER' : 'CHATBOT', message: msg.content }));
+                        const latestMessage = messagesForApi[messagesForApi.length - 1];
+                        body = { model: model, message: latestMessage.content, chat_history: cohereMessages };
                         break;
 
                     case 'groq':
@@ -293,10 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     case 'openrouter':
                     default:
                         endpoint = 'https://openrouter.ai/api/v1/chat/completions';
-                        headers = { 
-                            'Authorization': `Bearer ${apiKeys.openrouter}`, 
-                            'Content-Type': 'application/json'
-                        };
+                        headers = { 'Authorization': `Bearer ${apiKeys.openrouter}`, 'Content-Type': 'application/json' };
                         body = { model: model, messages: messagesForApi };
                         break;
                 }
@@ -305,16 +308,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    if(response.status === 401) throw new Error(`Status 401 for ${provider}: ${errorData.error?.message || 'Invalid API Key'}`);
-                    throw new Error(`Status ${response.status} for ${provider}: ${errorData.error?.message || JSON.stringify(errorData)}`);
+                    throw new Error(errorData.message || errorData.error?.message || JSON.stringify(errorData));
                 }
 
                 const data = await response.json();
                 let aiMessage = "No response.";
                 if (provider === 'anthropic') {
-                    aiMessage = data.content?.[0]?.text || "No valid response content.";
+                    aiMessage = data.content?.[0]?.text;
+                } else if (provider === 'cohere') {
+                    aiMessage = data.text;
                 } else { // OpenAI, Groq, OpenRouter
-                    aiMessage = data.choices?.[0]?.message?.content || "No valid response choice.";
+                    aiMessage = data.choices?.[0]?.message?.content;
+                }
+
+                if (!aiMessage) {
+                    throw new Error("Empty or invalid response from provider.");
                 }
 
                 currentChat.messages.push({ role: 'assistant', content: aiMessage });
@@ -323,12 +331,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error(`Error with ${model} via ${provider}:`, error);
-                if (error.message.includes('Status 401')){
-                    displayMessage(translations[currentLang].invalidApiKeyError(provider), 'ai-system');
-                } 
+
+                let errorToDisplay = `**${provider}/${model}** failed.`;
+                if (error instanceof Error && error.message) {
+                    try {
+                        const parsedError = JSON.parse(error.message);
+                        errorToDisplay += `\n> *${parsedError.message || error.message}*`;
+                    } catch (e) {
+                        errorToDisplay += `\n> *${error.message}*`;
+                    }
+                }
                 
-                if (!handleModelSwitch()) {
-                    break; 
+                if (handleModelSwitch(true)) { // suppressMessage = true
+                     errorToDisplay += `\n\nSwitching to **${currentModelStrategy[currentModelIndex].provider}/${currentModelStrategy[currentModelIndex].id}**.`;
+                } else {
+                    errorToDisplay = translations[currentLang].allModelsFailed;
+                }
+                displayMessage(errorToDisplay, 'ai-system');
+                
+                if (!currentModelStrategy[currentModelIndex] || currentModelIndex === 0) { // Ako smo se vratili na početak ili nema više modela
+                    break;
                 }
             }
         }
@@ -338,14 +360,17 @@ document.addEventListener('DOMContentLoaded', () => {
         filePreviewContainer.innerHTML = '';
     }
 
-    function handleModelSwitch(force = false) {
+    function handleModelSwitch(suppressMessage = false) {
         if (currentModelStrategy.length > currentModelIndex + 1) {
             currentModelIndex++;
             updateModelStatus();
-            if(!force) displayMessage(translations[currentLang].limitReachedSwitching(currentModelStrategy[currentModelIndex].id), "ai-system");
+            if (!suppressMessage) {
+                const trans = { ...translations.en, ...translations[currentLang] };
+                const nextModelInfo = currentModelStrategy[currentModelIndex];
+                displayMessage(trans.limitReachedSwitching(`${nextModelInfo.provider}/${nextModelInfo.id}`), "ai-system");
+            }
             return true;
         }
-        if(!force) displayMessage(translations[currentLang].allModelsFailed, "ai-system");
         return false;
     }
     
@@ -605,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentModelStrategy.forEach((model, index) => {
             const modelOption = document.createElement('div');
             modelOption.className = 'model-option';
-            modelOption.textContent = model.id;
+            modelOption.textContent = model.provider + '/' + model.id;
             modelOption.dataset.index = index;
             if (index === currentModelIndex) {
                 modelOption.classList.add('active');
