@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LOKALIZACIJA (i18n) ---
     const translations = {
         en: { 
-            appTitle: "AI Chain", currentModelLabel: "Current:", fallbackModelLabel: "Fallback:", modelSelectionTitle: "Select a Model", messagePlaceholder: "Enter a message...", settingsTitle: "API Key Settings", settingsMotivation: "Connect your free API keys to unlock the full potential of AI Chain. Your keys are stored securely in your browser and never leave your device.", openrouterDescription: `"Universal Key" - Access to dozens of AI models (recommended).`, groqDescription: `"Sports Car" - Access to the fastest models for instant answers.`, googleDescription: `"Reliable Helper" - Direct access to Google's Gemini models.`, economy: "Economy", balanced: "Balanced", power: "Max. Power", saveButton: "Save & Start", notConfigured: "Not Configured", notAvailable: "None", aiThinking: "AI is thinking...", noModelsAvailable: "No AI models available.", welcomeMessage: "Welcome! Start the conversation...", forceSwitchLabel: "Test Next Model", welcomeSlogan: "One chat, all free AI models, uninterrupted.", startChat: "Start Chatting", topModelsTitle: "Today's Top Models", allModelsFailed: "All available models failed. Please check your API keys or network connection.", uploadImageTitle: "Upload Image", uploadDocTitle: "Upload Document (.txt)", historyTitle: "History", newChatLabel: "New Chat", newChatTitle: "Start a new conversation", searchHistoryPlaceholder: "Search...", clearHistoryLabel: "Clear History", invalidApiKeyError: (provider) => `Authentication failed for ${provider}. Please check your API key.`, today: "Today", yesterday: "Yesterday", last7Days: "Previous 7 Days", older: "Older", confirmClearHistory: "Delete all chat history? This cannot be undone.", confirmDeleteChat: "Delete this chat? This cannot be undone.", 
+            appTitle: "AI Chain", currentModelLabel: "Current:", fallbackModelLabel: "Fallback:", modelSelectionTitle: "Select a Model", messagePlaceholder: "Enter a message...", settingsTitle: "API Key Settings", settingsMotivation: "Connect your free API keys to unlock the full potential of AI Chain. Your keys are stored securely in your browser and never leave your device.", openrouterDescription: `"Universal Key" - Access to dozens of AI models (recommended).`, groqDescription: `"Sports Car" - Access to the fastest models for instant answers.`, googleDescription: `"Reliable Helper" - Direct access to Google's Gemini models.`, economy: "Economy", balanced: "Balanced", power: "Max. Power", saveButton: "Save & Start", notConfigured: "Not Configured", notAvailable: "None", aiThinking: "AI is thinking...", noModelsAvailable: "No AI models available.", welcomeMessage: "Welcome! Start the conversation...", forceSwitchLabel: "Test Next Model", forceSwitchBackLabel: "Test Previous Model", selectModelButton: "Select Model", welcomeSlogan: "One chat, all free AI models, uninterrupted.", startChat: "Start Chatting", topModelsTitle: "Today's Top Models", allModelsFailed: "All available models failed. Please check your API keys or network connection.", uploadImageTitle: "Upload Image", uploadDocTitle: "Upload Document (.txt)", historyTitle: "History", newChatLabel: "New Chat", newChatTitle: "Start a new conversation", searchHistoryPlaceholder: "Search...", clearHistoryLabel: "Clear History", invalidApiKeyError: (provider) => `Authentication failed for ${provider}. Please check your API key.`, today: "Today", yesterday: "Yesterday", last7Days: "Previous 7 Days", older: "Older", confirmClearHistory: "Delete all chat history? This cannot be undone.", confirmDeleteChat: "Delete this chat? This cannot be undone.", switchingBackTo: (model) => `Switching back to ${model}.`, limitReachedSwitching: (model) => `Limit reached. Switching to ${model}.`,
             essentialKeys: "Essential", 
             powerUserKeys: "Premium Power Access", 
             howToTitle: (provider) => `How to get a ${provider} key?`, helpPlaceholder: "Your AI assistant will prepare a visual guide (GIF) for this process soon. For now, please visit the provider's website to generate a new key and set spending limits to $0.", pinChat: "Pin", renameChat: "Rename", deleteChat: "Delete",
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
             moonshotDescription: `"The Context King" - Access to Kimi models.`
         },
         sr: { 
-            appTitle: "AI Chain", currentModelLabel: "Trenutni:", fallbackModelLabel: "Rezerva:", modelSelectionTitle: "Odaberi Model", messagePlaceholder: "Unesite poruku...", settingsTitle: "Podešavanja API Ključeva", settingsMotivation: "Povežite vaše besplatne API ključeve da otključate pun potencijal AI Chain-a. Ključevi se čuvaju bezbedno u vašem browseru i nikada ne napuštaju vaš uređaj.", openrouterDescription: `"Univerzalni Ključ" - Pristup desetinama AI modela (preporučeno).`, groqDescription: `"Sportski Auto" - Pristup najbržim modelima za instant odgovore.`, googleDescription: `"Pouzdan Pomoćnik" - Direktan pristup Google Gemini modelima.`, economy: "Štednja", balanced: "Balans", power: "Maks. Snaga", saveButton: "Sačuvaj i Počni", notConfigured: "Nije Konfigurisan", notAvailable: "Nema", aiThinking: "AI razmišlja...", noModelsAvailable: "Nema dostupnih modela.", welcomeMessage: "Dobrodošli! Započnite konverzaciju...", forceSwitchLabel: "Testiraj Sledeći Model", welcomeSlogan: "Jedan čet, svi besplatni AI modeli.", startChat: "Započni Razgovor", topModelsTitle: "Današnji Top Modeli", allModelsFailed: "Svi dostupni modeli su otkazali. Proverite API ključeve ili internet konekciju.", uploadImageTitle: "Otpremi Sliku", uploadDocTitle: "Otpremi Dokument (.txt)", historyTitle: "Istorija", newChatLabel: "Novi Razgovor", newChatTitle: "Započni novi razgovor", searchHistoryPlaceholder: "Pretraži...", clearHistoryLabel: "Obriši Istoriju", invalidApiKeyError: (provider) => `Autentifikacija za ${provider} nije uspela. Proverite ključ.`, today: "Danas", yesterday: "Juče", last7Days: "Prethodnih 7 dana", older: "Starije", confirmClearHistory: "Obrisati kompletnu istoriju? Ova akcija je nepovratna.", confirmDeleteChat: "Obrisati ovaj razgovor? Akcija je nepovratna.", 
+            appTitle: "AI Chain", currentModelLabel: "Trenutni:", fallbackModelLabel: "Rezerva:", modelSelectionTitle: "Odaberi Model", messagePlaceholder: "Unesite poruku...", settingsTitle: "Podešavanja API Ključeva", settingsMotivation: "Povežite vaše besplatne API ključeve da otključate pun potencijal AI Chain-a. Ključevi se čuvaju bezbedno u vašem browseru i nikada ne napuštaju vaš uređaj.", openrouterDescription: `"Univerzalni Ključ" - Pristup desetinama AI modela (preporučeno).`, groqDescription: `"Sportski Auto" - Pristup najbržim modelima za instant odgovore.`, googleDescription: `"Pouzdan Pomoćnik" - Direktan pristup Google Gemini modelima.`, economy: "Štednja", balanced: "Balans", power: "Maks. Snaga", saveButton: "Sačuvaj i Počni", notConfigured: "Nije Konfigurisan", notAvailable: "Nema", aiThinking: "AI razmišlja...", noModelsAvailable: "Nema dostupnih modela.", welcomeMessage: "Dobrodošli! Započnite konverzaciju...", forceSwitchLabel: "Testiraj Sledeći Model", forceSwitchBackLabel: "Testiraj Prethodni Model", selectModelButton: "Odabir Modela", welcomeSlogan: "Jedan čet, svi besplatni AI modeli.", startChat: "Započni Razgovor", topModelsTitle: "Današnji Top Modeli", allModelsFailed: "Svi dostupni modeli su otkazali. Proverite API ključeve ili internet konekciju.", uploadImageTitle: "Otpremi Sliku", uploadDocTitle: "Otpremi Dokument (.txt)", historyTitle: "Istorija", newChatLabel: "Novi Razgovor", newChatTitle: "Započni novi razgovor", searchHistoryPlaceholder: "Pretraži...", clearHistoryLabel: "Obriši Istoriju", invalidApiKeyError: (provider) => `Autentifikacija za ${provider} nije uspela. Proverite ključ.`, today: "Danas", yesterday: "Juče", last7Days: "Prethodnih 7 dana", older: "Starije", confirmClearHistory: "Obrisati kompletnu istoriju? Ova akcija je nepovratna.", confirmDeleteChat: "Obrisati ovaj razgovor? Akcija je nepovratna.", switchingBackTo: (model) => `Vraćanje na ${model}.`, limitReachedSwitching: (model) => `Dostignut limit. Prebacivanje na ${model}.`,
             essentialKeys: "Esencijalni", 
             powerUserKeys: "Premium Power Pristup", 
             howToTitle: (provider) => `Kako doći do ${provider} ključa?`, helpPlaceholder: "Vaš AI asistent će uskoro pripremiti vizuelni vodič (GIF) za ovaj proces. Za sada, posetite sajt provajdera da generišete novi ključ i postavite limite potrošnje na $0.", pinChat: "Zakači", renameChat: "Preimenuj", deleteChat: "Obriši",
@@ -47,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveSettingsButton = getEl('save-settings-button');
     const langButton = getEl('lang-button');
     const langMenu = getEl('lang-menu');
-    const forceSwitchButton = getEl('force-switch-button');
     const welcomeOverlay = getEl('welcome-overlay');
     const startChatButton = getEl('start-chat-button');
     const modelRankingList = getEl('model-ranking-list');
@@ -64,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const messagesSection = getEl('messages-section');
     const currentModelNameEl = getEl('current-model-name');
     const fallbackModelsListEl = getEl('fallback-models-list');
-    const modelSelectorButton = getEl('model-selector-button');
     const helpModal = getEl('help-modal');
     const closeHelpModalButton = getEl('close-help-modal-button');
     const helpModalTitle = getEl('help-modal-title');
@@ -73,9 +71,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const pinChatBtn = getEl('pin-chat-btn');
     const renameChatBtn = getEl('rename-chat-btn');
     const deleteChatBtn = getEl('delete-chat-btn');
-    const modelSelectionModal = getEl('model-selection-modal');
-    const modelSelectionList = getEl('model-selection-list');
-    const closeModelSelectionButton = getEl('close-model-selection-button');
+    
+    // Elementi za Fazu 3.0
+    const openModelPageButton = getEl('open-model-page-button');
+    const closeModelPageButton = getEl('close-model-page-button');
+    const modelSelectionPage = getEl('model-selection-page');
+    const forceSwitchButton = getEl('force-switch-button');
+    const forceSwitchBackButton = getEl('force-switch-back-button');
+    const modelSearchInput = getEl('model-search-input');
+    const viewHierarchyButton = getEl('view-hierarchy-button');
+    const viewProviderButton = getEl('view-provider-button');
 
     // Inputi za API ključeve
     const openRouterKeyInput = getEl('openrouter-key-input');
@@ -100,10 +105,46 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentLang = 'en';
     let allChats = [];
     let currentChatId = null;
-    let conversationHistory = [];
     let activeContextMenuChatId = null;
 
     // --- FUNKCIJE ---
+
+    async function generateZhipuToken(apiKey) {
+        const [id, secret] = apiKey.split('.');
+        if (!id || !secret) {
+            throw new Error('Invalid Zhipu API Key format. Expected ID.SECRET');
+        }
+
+        const header = { alg: 'HS256', sign_type: 'SIGN', typ: 'JWT' };
+        const payload = {
+            api_key: id,
+            exp: Date.now() + 2 * 60 * 1000, 
+            timestamp: Date.now(),
+        };
+
+        const toBase64Url = (data) => btoa(JSON.stringify(data)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+        
+        const encodedHeader = toBase64Url(header);
+        const encodedPayload = toBase64Url(payload);
+        
+        const dataToSign = `${encodedHeader}.${encodedPayload}`;
+        
+        const cryptoKey = await crypto.subtle.importKey(
+            'raw',
+            new TextEncoder().encode(secret),
+            { name: 'HMAC', hash: 'SHA-256' },
+            false,
+            ['sign']
+        );
+        
+        const signature = await crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(dataToSign));
+        
+        const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)))
+            .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+
+        return `${dataToSign}.${encodedSignature}`;
+    }
+
     function setLanguage(lang) {
         currentLang = lang;
         localStorage.setItem('preferredLanguage', lang);
@@ -124,16 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (placeholderKey) el.placeholder = translation;
             else if (titleKey) el.title = translation;
             else {
-                const icon = el.querySelector('i');
-                const textSpan = el.querySelector('span');
-                if (icon && textSpan) {
-                     textSpan.textContent = ` ${translation}`;
-                } else if (icon) {
-                    el.innerHTML = `${icon.outerHTML} <span>${translation}</span>`;
-                }
-                 else {
-                    el.textContent = translation;
-                }
+                el.textContent = translation;
             }
         });
         
@@ -206,7 +238,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 newStrategy.push({ id: 'claude-3-5-sonnet-20240620', provider: 'anthropic', architecture: { modality: 'multimodal' } });
             }
             if (apiKeys.cohere) {
-                newStrategy.push({ id: 'command-a-03-2025', provider: 'cohere', architecture: { modality: 'multimodal' } });
+                newStrategy.push({ id: 'command-r-plus', provider: 'cohere', architecture: { modality: 'multimodal' } });
+            }
+            if (apiKeys.zhipu) {
+                newStrategy.push({ id: 'glm-4', provider: 'zhipu', architecture: { modality: 'text' } });
+            }
+            if (apiKeys.moonshot) {
+                newStrategy.push({ id: 'moonshot-v1-128k', provider: 'moonshot', architecture: { modality: 'text' } });
             }
         }
 
@@ -214,7 +252,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const fallbackStrategy = dynamicStrategies[strategyKey].filter(modelInfo => {
                 if ((modelInfo.provider === 'openai' && apiKeys.openai) ||
                     (modelInfo.provider === 'anthropic' && apiKeys.anthropic) ||
-                    (modelInfo.provider === 'cohere' && apiKeys.cohere)) {
+                    (modelInfo.provider === 'cohere' && apiKeys.cohere) ||
+                    (modelInfo.provider === 'zhipu' && apiKeys.zhipu) ||
+                    (modelInfo.provider === 'moonshot' && apiKeys.moonshot)) {
                     return false;
                 }
                 
@@ -248,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const historyEntry = { role: 'user', content: (contentForApi.length === 1 && contentForApi[0].type === 'text') ? finalUserMessage : contentForApi, fileInfo: attachedFile };
         const currentChat = allChats.find(c => c.id === currentChatId);
+        if (!currentChat) return; 
         currentChat.messages.push(historyEntry);
 
         let success = false;
@@ -288,6 +329,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         const latestMessage = messagesForApi[messagesForApi.length - 1];
                         body = { model: model, message: latestMessage.content, chat_history: cohereMessages };
                         break;
+                    
+                    case 'zhipu':
+                        const token = await generateZhipuToken(apiKey);
+                        endpoint = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+                        headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+                        body = { model: model, messages: messagesForApi };
+                        break;
+
+                    case 'moonshot':
+                        endpoint = 'https://api.moonshot.cn/v1/chat/completions';
+                        headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
+                        body = { model: model, messages: messagesForApi };
+                        break;
 
                     case 'groq':
                         endpoint = 'https://api.groq.com/openai/v1/chat/completions';
@@ -317,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     aiMessage = data.content?.[0]?.text;
                 } else if (provider === 'cohere') {
                     aiMessage = data.text;
-                } else { // OpenAI, Groq, OpenRouter
+                } else { // OpenAI, Groq, OpenRouter, Zhipu, Moonshot
                     aiMessage = data.choices?.[0]?.message?.content;
                 }
 
@@ -349,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 displayMessage(errorToDisplay, 'ai-system');
                 
-                if (!currentModelStrategy[currentModelIndex] || currentModelIndex === 0) { // Ako smo se vratili na početak ili nema više modela
+                if (!currentModelStrategy[currentModelIndex] || currentModelIndex === 0) { 
                     break;
                 }
             }
@@ -367,7 +421,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!suppressMessage) {
                 const trans = { ...translations.en, ...translations[currentLang] };
                 const nextModelInfo = currentModelStrategy[currentModelIndex];
-                displayMessage(trans.limitReachedSwitching(`${nextModelInfo.provider}/${nextModelInfo.id}`), "ai-system");
+                displayMessage(trans.limitReachedSwitching(`**${nextModelInfo.provider}/${nextModelInfo.id}**`), "ai-system");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    function handleModelSwitchBack(suppressMessage = false) {
+        if (currentModelIndex > 0) {
+            currentModelIndex--;
+            updateModelStatus();
+            if (!suppressMessage) {
+                const trans = { ...translations.en, ...translations[currentLang] };
+                const prevModelInfo = currentModelStrategy[currentModelIndex];
+                displayMessage(trans.switchingBackTo(`**${prevModelInfo.provider}/${prevModelInfo.id}**`), "ai-system");
             }
             return true;
         }
@@ -463,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (allChats.length === 0) {
             startNewChat();
-        } else if (conversationHistory.length === 0) {
+        } else if (allChats.length === 0) {
              messagesSection.innerHTML = '';
              displayMessage(translations[currentLang].welcomeMessage, 'ai-system');
         }
@@ -591,10 +659,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const chat = allChats.find(c => c.id === chatId);
         if (!chat) return;
         currentChatId = chatId;
-        conversationHistory = chat.messages;
+        
         messagesSection.innerHTML = '';
-        if(conversationHistory.length > 0) {
-            conversationHistory.forEach(msg => {
+        if(chat.messages.length > 0) {
+            chat.messages.forEach(msg => {
                 const content = typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || '';
                 displayMessage(content, msg.role, msg.fileInfo);
             });
@@ -610,7 +678,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const newChat = { id: Date.now(), title: translations[currentLang]?.newChatLabel || "New Chat", lastUpdated: Date.now(), messages: [], isPinned: false };
         allChats.unshift(newChat);
         currentChatId = newChat.id;
-        conversationHistory = newChat.messages;
         messagesSection.innerHTML = '';
         displayMessage(translations[currentLang].welcomeMessage, 'ai-system');
         saveAllChats();
@@ -623,21 +690,55 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('ai-chain-all-chats', JSON.stringify(allChats));
     }
 
-    function openModelSelectionModal() {
-        if (currentModelStrategy.length === 0) return;
-        modelSelectionList.innerHTML = '';
-
-        currentModelStrategy.forEach((model, index) => {
-            const modelOption = document.createElement('div');
-            modelOption.className = 'model-option';
-            modelOption.textContent = model.provider + '/' + model.id;
-            modelOption.dataset.index = index;
-            if (index === currentModelIndex) {
-                modelOption.classList.add('active');
-            }
-            modelSelectionList.appendChild(modelOption);
-        });
-        modelSelectionModal.classList.remove('hidden');
+    function openModelSelectionPage() {
+        const modelSelectionBody = modelSelectionPage.querySelector('.model-selection-body');
+        
+        if (currentModelStrategy.length === 0) {
+            modelSelectionBody.innerHTML = `<p style="padding: 2rem; text-align: center; color: var(--text-secondary-color);">No models available. Please configure your API keys first.</p>`;
+        } else {
+            modelSelectionBody.innerHTML = '';
+            
+            const modelsByProvider = currentModelStrategy.reduce((acc, model, index) => {
+                if (!acc[model.provider]) {
+                    acc[model.provider] = [];
+                }
+                acc[model.provider].push({...model, index});
+                return acc;
+            }, {});
+            
+            Object.entries(modelsByProvider).forEach(([provider, models]) => {
+                const providerSection = document.createElement('div');
+                providerSection.className = 'provider-section';
+                providerSection.innerHTML = `<h3>${provider}</h3>`;
+                
+                const modelsList = document.createElement('div');
+                modelsList.className = 'models-list';
+                
+                models.forEach(model => {
+                    const modelOption = document.createElement('div');
+                    modelOption.className = 'model-option';
+                    if (model.index === currentModelIndex) {
+                        modelOption.classList.add('active');
+                    }
+                    modelOption.dataset.modelIndex = model.index;
+                    
+                    modelOption.innerHTML = `
+                        <div class="model-info">
+                            <span class="model-name">${model.id}</span>
+                        </div>
+                        <div class="model-status">
+                            ${model.index === currentModelIndex ? '<i class="fa-solid fa-check"></i>' : ''}
+                        </div>
+                    `;
+                    modelsList.appendChild(modelOption);
+                });
+                
+                providerSection.appendChild(modelsList);
+                modelSelectionBody.appendChild(providerSection);
+            });
+        }
+        
+        modelSelectionPage.classList.add('visible');
     }
 
     async function initializeApp() {
@@ -759,18 +860,54 @@ document.addEventListener('DOMContentLoaded', () => {
     
     closeHelpModalButton.addEventListener('click', () => helpModal.classList.add('hidden'));
 
-    modelSelectorButton.addEventListener('click', openModelSelectionModal);
-    closeModelSelectionButton.addEventListener('click', () => modelSelectionModal.classList.add('hidden'));
-    
-    modelSelectionList.addEventListener('click', (e) => {
+    openModelPageButton.addEventListener('click', openModelSelectionPage);
+
+    closeModelPageButton.addEventListener('click', () => {
+        modelSelectionPage.classList.remove('visible');
+    });
+
+    modelSelectionPage.addEventListener('click', (e) => {
         const modelOption = e.target.closest('.model-option');
         if (modelOption) {
-            const newIndex = parseInt(modelOption.dataset.index, 10);
-            currentModelIndex = newIndex;
-            updateModelStatus();
-            modelSelectionModal.classList.add('hidden');
+            const modelIndex = parseInt(modelOption.dataset.modelIndex, 10);
+            if (!isNaN(modelIndex)) {
+                currentModelIndex = modelIndex;
+                updateModelStatus();
+                modelSelectionPage.classList.remove('visible');
+            }
+        } else if (e.target === modelSelectionPage) {
+            modelSelectionPage.classList.remove('visible');
         }
     });
+
+    forceSwitchBackButton.addEventListener('click', () => {
+        if (!isAIThinking && currentModelStrategy.length > 1) {
+            handleModelSwitchBack(true);
+        }
+    });
+    
+    if (modelSearchInput) {
+        modelSearchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            console.log('Pretraga modela:', searchTerm);
+        });
+    }
+    
+    if (viewHierarchyButton && viewProviderButton) {
+        viewHierarchyButton.addEventListener('click', () => {
+            viewHierarchyButton.classList.add('active');
+            viewProviderButton.classList.remove('active');
+            console.log('Prikaz po snazi modela');
+            openModelSelectionPage(); 
+        });
+        
+        viewProviderButton.addEventListener('click', () => {
+            viewProviderButton.classList.add('active');
+            viewHierarchyButton.classList.remove('active');
+            console.log('Prikaz po provajderu');
+            openModelSelectionPage();
+        });
+    }
 
     langButton.addEventListener('click', (e) => { e.stopPropagation(); langMenu.classList.toggle('hidden'); });
     document.addEventListener('click', (e) => {
@@ -778,9 +915,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!uploadButton.contains(e.target) && !uploadOptions.contains(e.target)) uploadOptions.classList.add('hidden');
         if (!e.target.closest('#history-item-menu')) {
             historyItemMenu.classList.add('hidden');
-        }
-        if (!e.target.closest('.modal-content') && !e.target.closest('#model-selector-button')) {
-            modelSelectionModal.classList.add('hidden');
         }
     });
 

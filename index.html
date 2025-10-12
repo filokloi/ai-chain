@@ -36,9 +36,6 @@
                     </div>
                 </div>
                 <div class="controls">
-                    <button id="force-switch-button" class="control-button" title="Test Next Model" data-i18n-key="forceSwitchLabel" data-i18n-title-key="forceSwitchLabel">
-                        <i class="fa-solid fa-forward"></i>
-                    </button>
                     <div class="lang-control">
                         <button id="lang-button" class="control-button lang-display-button">
                         </button>
@@ -112,14 +109,28 @@
                     </button>
                 </form>
                 <div class="status-bar">
-                    <div id="model-selector-button" class="clickable" data-i18n-title-key="modelSelectionTitle" title="Select a Model">
+                    <div id="current-model-display" class="status-bar-item">
                         <span data-i18n-key="currentModelLabel">Current:</span>
                         <strong id="current-model-name" data-i18n-key="notConfigured">Not Configured</strong>
-                        <i class="fa-solid fa-chevron-down"></i>
                     </div>
-                    <div class="fallback-models">
-                        <span data-i18n-key="fallbackModelLabel">Fallback:</span>
-                        <span id="fallback-models-list">None</span>
+
+                    <div class="status-bar-item status-bar-center">
+                        <button id="force-switch-back-button" class="control-button" title="Test Previous Model" data-i18n-title-key="forceSwitchBackLabel">
+                            <i class="fa-solid fa-backward"></i>
+                        </button>
+                        <button id="open-model-page-button" class="footer-action-button" data-i18n-key="selectModelButton">
+                            Select Model
+                        </button>
+                        <button id="force-switch-button" class="control-button" title="Test Next Model" data-i18n-title-key="forceSwitchLabel">
+                            <i class="fa-solid fa-forward"></i>
+                        </button>
+                    </div>
+
+                    <div class="fallback-models status-bar-item">
+                        <div>
+                            <span data-i18n-key="fallbackModelLabel">Fallback:</span>
+                            <span id="fallback-models-list">None</span>
+                        </div>
                     </div>
                 </div>
             </footer>
@@ -164,7 +175,7 @@
                             </div>
                             <div class="settings-column">
                                 <fieldset>
-                                    <legend data-i18n-key="powerUserKeys">Premium Power Pristup</legend>
+                                    <legend data-i18n-key="powerUserKeys">Premium Power Access</legend>
                                     <div class="api-key-group">
                                         <label for="google-key-input"><a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
                                         <p class="key-description" data-i18n-key="googleDescription">"Reliable Helper" - Direct access to Google's Gemini models.</p>
@@ -201,20 +212,41 @@
                                         <div class="password-input-wrapper"><input type="password" id="zhipu-key-input" placeholder="..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Zhipu">?</button></div>
                                     </div>
                                     <div class="api-key-group">
-                                        <label for="moonshot-key-input"><a href="https://platform.moonshot.cn/console/api-keys" target="_blank">Moonshot AI Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
+                                        <label for="moonshot-key-input"><a href="https://platform.moonshot.ai/console/api-keys" target="_blank">Moonshot AI Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
                                         <p class="key-description" data-i18n-key="moonshotDescription">"The Context King" - Access to Kimi models.</p>
                                         <div class="password-input-wrapper"><input type="password" id="moonshot-key-input" placeholder="..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Moonshot">?</button></div>
                                     </div>
                                 </fieldset>
                             </div>
                         </div>
-
                     </section>
                     <footer class="settings-footer">
                         <button id="save-settings-button" data-i18n-key="saveButton">Save & Start</button>
                     </footer>
                 </div>
             </div>
+
+            <div id="model-selection-page" class="hidden">
+                <div class="model-selection-content">
+                    <header class="model-selection-header">
+                        <h2 data-i18n-key="modelSelectionTitle">Select a Model</h2>
+                        <button id="close-model-page-button" class="close-button">&times;</button>
+                    </header>
+                    <div class="model-selection-toolbar">
+                        <div class="search-wrapper">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="search" id="model-search-input" placeholder="Search models...">
+                        </div>
+                        <div class="view-switcher">
+                            <button id="view-hierarchy-button" class="view-button active" title="View by Power"><i class="fa-solid fa-ranking-star"></i></button>
+                            <button id="view-provider-button" class="view-button" title="View by Provider"><i class="fa-solid fa-layer-group"></i></button>
+                        </div>
+                    </div>
+                    <section class="model-selection-body">
+                        </section>
+                </div>
+            </div>
+
         </div>
     </div>
     
@@ -224,8 +256,7 @@
                 <h2 id="help-modal-title"></h2>
                 <button id="close-help-modal-button" class="close-button">&times;</button>
             </header>
-            <section id="help-modal-body" class="modal-body">
-                </section>
+            <section id="help-modal-body" class="modal-body"></section>
         </div>
     </div>
 
@@ -233,17 +264,6 @@
         <button id="pin-chat-btn"><i class="fa-solid fa-thumbtack"></i> <span data-i18n-key="pinChat">Pin</span></button>
         <button id="rename-chat-btn"><i class="fa-solid fa-pen-to-square"></i> <span data-i18n-key="renameChat">Rename</span></button>
         <button id="delete-chat-btn"><i class="fa-solid fa-trash-can"></i> <span data-i18n-key="deleteChat">Delete</span></button>
-    </div>
-
-    <div id="model-selection-modal" class="modal hidden">
-        <div class="modal-content">
-            <header class="modal-header">
-                <h2 data-i18n-key="modelSelectionTitle">Select a Model</h2>
-                <button id="close-model-selection-button" class="close-button">&times;</button>
-            </header>
-            <section id="model-selection-list" class="modal-body">
-                </section>
-        </div>
     </div>
     
     <input type="file" id="image-input-hidden" class="hidden-input" accept="image/*" multiple="false">
