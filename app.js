@@ -1,9 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- KONFIGURACIJA ---
-    const GITHUB_WHITELIST_URL = 'https://raw.githubusercontent.com/filokloi/ai-chain/main/priority_models.json';
-    const MODEL_RANKINGS_URL = 'model_rankings.json'; // UČITAVAMO LOKALNI FAJL!
+    // ================================
+    // KONFIGURACIJA I KONSTANTE
+    // ================================
+    const GITHUB_WHITELIST_URL = 'priority_models.json';
+    const MODEL_RANKINGS_URL = 'model_rankings.json';
 
-    // --- LOKALIZACIJA (i18n) ---
+    // ================================
+    // LOKALIZACIJA (i18n)
+    // ================================
     const translations = {
         en: { 
             appTitle: "AI Chain", currentModelLabel: "Current:", fallbackModelLabel: "Fallback:", modelSelectionTitle: "Select a Model", messagePlaceholder: "Enter a message...", settingsTitle: "API Key Settings", settingsMotivation: "Connect your free API keys to unlock the full potential of AI Chain. Your keys are stored securely in your browser and never leave your device.", openrouterDescription: `"Universal Key" - Access to dozens of AI models (recommended).`, groqDescription: `"Sports Car" - Access to the fastest models for instant answers.`, googleDescription: `"Reliable Helper" - Direct access to Google's Gemini models.`, economy: "Economy", balanced: "Balanced", power: "Max. Power", saveButton: "Save & Start", notConfigured: "Not Configured", notAvailable: "None", aiThinking: "AI is thinking...", noModelsAvailable: "No AI models available.", welcomeMessage: "Welcome! Start the conversation...", forceSwitchLabel: "Test Next Model", forceSwitchBackLabel: "Test Previous Model", selectModelButton: "Select Model", welcomeSlogan: "One chat, all free AI models, uninterrupted.", startChat: "Start Chatting", topModelsTitle: "Today's Top Models", allModelsFailed: "All available models failed. Please check your API keys or network connection.", uploadImageTitle: "Upload Image", uploadDocTitle: "Upload Document (.txt)", historyTitle: "History", newChatLabel: "New Chat", newChatTitle: "Start a new conversation", searchHistoryPlaceholder: "Search...", clearHistoryLabel: "Clear History", invalidApiKeyError: (provider) => `Authentication failed for ${provider}. Please check your API key.`, today: "Today", yesterday: "Yesterday", last7Days: "Previous 7 Days", older: "Older", confirmClearHistory: "Delete all chat history? This cannot be undone.", confirmDeleteChat: "Delete this chat? This cannot be undone.", switchingBackTo: (model) => `Switching back to ${model}.`, limitReachedSwitching: (model) => `Limit reached. Switching to ${model}.`,
@@ -33,24 +37,58 @@ document.addEventListener('DOMContentLoaded', () => {
         },
     };
 
-    // --- ELEMENTI ---
+    // ================================
+    // DOM ELEMENTI
+    // ================================
     const getEl = (id) => document.getElementById(id);
+    
+    // Glavni elementi
     const appContainer = getEl('app-container');
-    const historyButton = getEl('history-button');
-    const newChatButton = getEl('new-chat-button');
-    const historyList = getEl('history-list');
-    const historySearchInput = getEl('history-search-input');
-    const clearHistoryButton = getEl('clear-history-button');
+    const welcomeOverlay = getEl('welcome-overlay');
+    const settingsPage = getEl('settings-page');
+    const modelSelectionPage = getEl('model-selection-page');
+    
+    // Navigacija i kontrola
     const logoButton = getEl('logo-button');
     const settingsButton = getEl('settings-button');
-    const settingsPage = getEl('settings-page');
+    const historyButton = getEl('history-button');
+    const newChatButton = getEl('new-chat-button');
+    const startChatButton = getEl('start-chat-button');
+    
+    // Podešavanja
     const closeSettingsButton = getEl('close-settings-button');
     const saveSettingsButton = getEl('save-settings-button');
     const langButton = getEl('lang-button');
     const langMenu = getEl('lang-menu');
-    const welcomeOverlay = getEl('welcome-overlay');
-    const startChatButton = getEl('start-chat-button');
+    
+    // Historija četova
+    const historyList = getEl('history-list');
+    const historySearchInput = getEl('history-search-input');
+    const clearHistoryButton = getEl('clear-history-button');
+    const historyItemMenu = getEl('history-item-menu');
+    const pinChatBtn = getEl('pin-chat-btn');
+    const renameChatBtn = getEl('rename-chat-btn');
+    const deleteChatBtn = getEl('delete-chat-btn');
+    
+    // Modeli i AI
+    const intelligenceSlider = getEl('intelligence-slider');
+    const currentModelNameEl = getEl('current-model-name');
+    const fallbackModelsListEl = getEl('fallback-models-list');
     const modelRankingList = getEl('model-ranking-list');
+    const openModelPageButton = getEl('open-model-page-button');
+    const closeModelPageButton = getEl('close-model-page-button');
+    const forceSwitchButton = getEl('force-switch-button');
+    const forceSwitchBackButton = getEl('force-switch-back-button');
+    const modelSearchInput = getEl('model-search-input');
+    const viewHierarchyButton = getEl('view-hierarchy-button');
+    const viewProviderButton = getEl('view-provider-button');
+    
+    // Poruke i unos
+    const messageForm = getEl('message-form');
+    const messageInput = getEl('message-input');
+    const messagesSection = getEl('messages-section');
+    
+    // Fajlovi
     const uploadButton = getEl('upload-button');
     const uploadOptions = getEl('upload-options');
     const uploadImageButton = getEl('upload-image-button');
@@ -58,32 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageInputHidden = getEl('image-input-hidden');
     const docInputHidden = getEl('doc-input-hidden');
     const filePreviewContainer = getEl('file-preview-container');
-    const intelligenceSlider = getEl('intelligence-slider');
-    const messageForm = getEl('message-form');
-    const messageInput = getEl('message-input');
-    const messagesSection = getEl('messages-section');
-    const currentModelNameEl = getEl('current-model-name');
-    const fallbackModelsListEl = getEl('fallback-models-list');
+    
+    // Help modal
     const helpModal = getEl('help-modal');
     const closeHelpModalButton = getEl('close-help-modal-button');
     const helpModalTitle = getEl('help-modal-title');
     const helpModalBody = getEl('help-modal-body');
-    const historyItemMenu = getEl('history-item-menu');
-    const pinChatBtn = getEl('pin-chat-btn');
-    const renameChatBtn = getEl('rename-chat-btn');
-    const deleteChatBtn = getEl('delete-chat-btn');
     
-    // Elementi za Fazu 3.0
-    const openModelPageButton = getEl('open-model-page-button');
-    const closeModelPageButton = getEl('close-model-page-button');
-    const modelSelectionPage = getEl('model-selection-page');
-    const forceSwitchButton = getEl('force-switch-button');
-    const forceSwitchBackButton = getEl('force-switch-back-button');
-    const modelSearchInput = getEl('model-search-input');
-    const viewHierarchyButton = getEl('view-hierarchy-button');
-    const viewProviderButton = getEl('view-provider-button');
-
-    // Inputi za API ključeve
+    // API ključevi - inputi
     const openRouterKeyInput = getEl('openrouter-key-input');
     const groqKeyInput = getEl('groq-key-input');
     const googleKeyInput = getEl('google-key-input');
@@ -94,8 +114,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const alibabaKeyInput = getEl('alibaba-key-input');
     const zhipuKeyInput = getEl('zhipu-key-input');
     const moonshotKeyInput = getEl('moonshot-key-input');
-    
-    // --- STANJE Aplikacije ---
+
+    // ================================
+    // GLOBALNO STANJE APLIKACIJE
+    // ================================
     let apiKeys = {};
     let currentModelStrategy = [];
     let currentModelIndex = 0;
@@ -103,13 +125,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let attachedFile = null;
     let dynamicStrategies = {};
     let freemiumWhitelist = [];
-    let modelRankings = []; // Ponovo uvedeno
+    let modelRankings = [];
     let currentLang = 'en';
     let allChats = [];
     let currentChatId = null;
     let activeContextMenuChatId = null;
 
-    // --- FUNKCIJE ---
+    // ================================
+    // UTILITY FUNKCIJE
+    // ================================
 
     async function generateZhipuToken(apiKey) {
         const [id, secret] = apiKey.split('.');
@@ -147,6 +171,40 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${dataToSign}.${encodedSignature}`;
     }
 
+    function getModelCapabilitiesHTML(model) {
+        let html = '';
+        const isMultimodal = model.architecture?.modality === 'multimodal' || model.id.includes('vision') || model.id.includes('claude-3') || model.id.includes('gpt-4o');
+        const hasLargeContext = (model.context_length || 0) >= 128000;
+        
+        const topTierModels = [
+            'openai/gpt-4o',
+            'anthropic/claude-3.5-sonnet',
+            'cohere/command-r-plus',
+            'glm-4'
+        ];
+        
+        const isTopTier = topTierModels.some(topModel => model.id.includes(topModel));
+
+        if (isTopTier) {
+            html += `<i class="fa-solid fa-brain" title="Advanced Reasoning"></i>`;
+            html += `<i class="fa-solid fa-screwdriver-wrench" title="Tool Use / Function Calling"></i>`;
+        }
+        
+        if (isMultimodal) {
+            html += `<i class="fa-solid fa-eye" title="Image Support (Vision)"></i>`;
+        }
+        
+        if (hasLargeContext) {
+            html += `<i class="fa-solid fa-file-lines" title="Large Context Window"></i>`;
+        }
+
+        return html;
+    }
+
+    // ================================
+    // LOKALIZACIJA I JEZIK
+    // ================================
+
     function setLanguage(lang) {
         currentLang = lang;
         localStorage.setItem('preferredLanguage', lang);
@@ -177,6 +235,10 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHistorySidebar(historySearchInput.value);
     }
 
+    // ================================
+    // API I DATA FETCHING
+    // ================================
+
     async function fetchWhitelist() {
         try {
             const response = await fetch(GITHUB_WHITELIST_URL, { cache: "no-store" });
@@ -189,7 +251,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Ponovo uvedena funkcija za rangiranje
     async function fetchModelRankings() {
         try {
             const response = await fetch(MODEL_RANKINGS_URL, { cache: 'no-cache' });
@@ -246,7 +307,11 @@ document.addEventListener('DOMContentLoaded', () => {
             dynamicStrategies = {};
         }
     }
-    
+
+    // ================================
+    // MODEL MANAGEMENT
+    // ================================
+
     function updateModelStrategy() {
         const sliderValue = parseInt(intelligenceSlider.value, 10);
         let strategyKey = sliderValue <= 33 ? 'economy' : (sliderValue >= 67 ? 'power' : 'balanced');
@@ -287,7 +352,63 @@ document.addEventListener('DOMContentLoaded', () => {
         currentModelIndex = 0;
         updateModelStatus();
     }
-    
+
+    function updateModelStatus() {
+        const trans = { ...translations.en, ...translations[currentLang] };
+        if (currentModelStrategy.length > 0 && currentModelIndex < currentModelStrategy.length) {
+            const current = currentModelStrategy[currentModelIndex];
+            currentModelNameEl.textContent = `${current.provider}/${current.id}`;
+            
+            const fallbacks = currentModelStrategy.slice(currentModelIndex + 1, currentModelIndex + 3);
+            if (fallbacks.length > 0) {
+                fallbackModelsListEl.textContent = fallbacks.map(m => m.id.split('/')[1] || m.id).join(', ');
+            } else {
+                fallbackModelsListEl.textContent = trans.notAvailable;
+            }
+
+            const isMultimodal = current.architecture?.modality === 'multimodal' || current.id.includes('vision') || current.id.includes('claude-3') || current.id.includes('gpt-4o');
+            uploadImageButton.disabled = !isMultimodal;
+            uploadDocButton.disabled = false;
+        } else {
+            currentModelNameEl.textContent = trans.notConfigured;
+            fallbackModelsListEl.textContent = trans.notAvailable;
+            uploadImageButton.disabled = true;
+            uploadDocButton.disabled = true;
+        }
+    }
+
+    function handleModelSwitch(suppressMessage = false) {
+        if (currentModelStrategy.length > currentModelIndex + 1) {
+            currentModelIndex++;
+            updateModelStatus();
+            if (!suppressMessage) {
+                const trans = { ...translations.en, ...translations[currentLang] };
+                const nextModelInfo = currentModelStrategy[currentModelIndex];
+                displayMessage(trans.limitReachedSwitching(`**${nextModelInfo.provider}/${nextModelInfo.id}**`), "ai-system");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    function handleModelSwitchBack(suppressMessage = false) {
+        if (currentModelIndex > 0) {
+            currentModelIndex--;
+            updateModelStatus();
+            if (!suppressMessage) {
+                const trans = { ...translations.en, ...translations[currentLang] };
+                const prevModelInfo = currentModelStrategy[currentModelIndex];
+                displayMessage(trans.switchingBackTo(`**${prevModelInfo.provider}/${prevModelInfo.id}**`), "ai-system");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    // ================================
+    // AI API KOMUNIKACIJA
+    // ================================
+
     async function getAiResponse(userMessage) {
         if (currentModelStrategy.length === 0) {
             displayMessage(translations[currentLang].noModelsAvailable, "ai-system");
@@ -434,58 +555,10 @@ document.addEventListener('DOMContentLoaded', () => {
         filePreviewContainer.innerHTML = '';
     }
 
-    function handleModelSwitch(suppressMessage = false) {
-        if (currentModelStrategy.length > currentModelIndex + 1) {
-            currentModelIndex++;
-            updateModelStatus();
-            if (!suppressMessage) {
-                const trans = { ...translations.en, ...translations[currentLang] };
-                const nextModelInfo = currentModelStrategy[currentModelIndex];
-                displayMessage(trans.limitReachedSwitching(`**${nextModelInfo.provider}/${nextModelInfo.id}**`), "ai-system");
-            }
-            return true;
-        }
-        return false;
-    }
+    // ================================
+    // UI FUNKCIJE - PORUKE
+    // ================================
 
-    function handleModelSwitchBack(suppressMessage = false) {
-        if (currentModelIndex > 0) {
-            currentModelIndex--;
-            updateModelStatus();
-            if (!suppressMessage) {
-                const trans = { ...translations.en, ...translations[currentLang] };
-                const prevModelInfo = currentModelStrategy[currentModelIndex];
-                displayMessage(trans.switchingBackTo(`**${prevModelInfo.provider}/${prevModelInfo.id}**`), "ai-system");
-            }
-            return true;
-        }
-        return false;
-    }
-    
-    function updateModelStatus() {
-        const trans = { ...translations.en, ...translations[currentLang] };
-        if (currentModelStrategy.length > 0 && currentModelIndex < currentModelStrategy.length) {
-            const current = currentModelStrategy[currentModelIndex];
-            currentModelNameEl.textContent = `${current.provider}/${current.id}`;
-            
-            const fallbacks = currentModelStrategy.slice(currentModelIndex + 1, currentModelIndex + 3);
-            if (fallbacks.length > 0) {
-                fallbackModelsListEl.textContent = fallbacks.map(m => m.id.split('/')[1] || m.id).join(', ');
-            } else {
-                fallbackModelsListEl.textContent = trans.notAvailable;
-            }
-
-            const isMultimodal = current.architecture?.modality === 'multimodal' || current.id.includes('vision') || current.id.includes('claude-3') || current.id.includes('gpt-4o');
-            uploadImageButton.disabled = !isMultimodal;
-            uploadDocButton.disabled = false;
-        } else {
-            currentModelNameEl.textContent = trans.notConfigured;
-            fallbackModelsListEl.textContent = trans.notAvailable;
-            uploadImageButton.disabled = true;
-            uploadDocButton.disabled = true;
-        }
-    }
-    
     function displayMessage(text, sender, fileInfo = null) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${sender}-message`;
@@ -515,7 +588,11 @@ document.addEventListener('DOMContentLoaded', () => {
         messagesSection.scrollTop = messagesSection.scrollHeight;
         return messageDiv;
     }
-    
+
+    // ================================
+    // SETTINGS I CONFIGURACIJA
+    // ================================
+
     function loadSettings() {
         apiKeys = JSON.parse(localStorage.getItem('apiKeys')) || {};
         openRouterKeyInput.value = apiKeys.openrouter || '';
@@ -561,6 +638,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ================================
+    // FAJL MANAGEMENT
+    // ================================
+
     function showFilePreview(file) {
         filePreviewContainer.innerHTML = '';
         const previewDiv = document.createElement('div');
@@ -599,6 +680,10 @@ document.addEventListener('DOMContentLoaded', () => {
         event.target.value = null;
     }
 
+    // ================================
+    // CHAT MANAGEMENT
+    // ================================
+
     async function handleFormSubmit(e) {
         e.preventDefault();
         const userMessage = messageInput.value.trim();
@@ -623,7 +708,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveAllChats();
         renderHistorySidebar();
     }
-    
+
     function renderHistorySidebar(filter = '') {
         historyList.innerHTML = '';
         const trans = { ...translations.en, ...translations[currentLang] };
@@ -709,38 +794,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveAllChats() {
         localStorage.setItem('ai-chain-all-chats', JSON.stringify(allChats));
     }
-    
-    // AŽURIRANA FUNKCIJA ZA PRIKAZ SVIH IKONICA
-    function getModelCapabilitiesHTML(model) {
-        let html = '';
-        const isMultimodal = model.architecture?.modality === 'multimodal' || model.id.includes('vision') || model.id.includes('claude-3') || model.id.includes('gpt-4o');
-        const hasLargeContext = (model.context_length || 0) >= 128000;
-        
-        // Lista najnaprednijih modela koji imaju "thinking" i "tool" sposobnosti
-        const topTierModels = [
-            'openai/gpt-4o',
-            'anthropic/claude-3.5-sonnet',
-            'cohere/command-r-plus',
-            'glm-4'
-        ];
-        
-        const isTopTier = topTierModels.some(topModel => model.id.includes(topModel));
 
-        if (isTopTier) {
-            html += `<i class="fa-solid fa-brain" title="Advanced Reasoning"></i>`;
-            html += `<i class="fa-solid fa-screwdriver-wrench" title="Tool Use / Function Calling"></i>`;
-        }
-        
-        if (isMultimodal) {
-            html += `<i class="fa-solid fa-eye" title="Image Support (Vision)"></i>`;
-        }
-        
-        if (hasLargeContext) {
-            html += `<i class="fa-solid fa-file-lines" title="Large Context Window"></i>`;
-        }
-
-        return html;
-    }
+    // ================================
+    // MODEL SELECTION UI
+    // ================================
 
     function renderProviderView(modelSelectionBody, searchTerm) {
         const modelsByProvider = currentModelStrategy.reduce((acc, model, index) => {
@@ -843,8 +900,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ================================
+    // APP INITIALIZATION
+    // ================================
+
     async function initializeApp() {
-        // Sada možemo bezbedno da sačekamo, jer je fajl lokalni
         await fetchModelRankings(); 
         const whitelist = await fetchWhitelist();
         await fetchAndBuildStrategies(whitelist);
@@ -867,21 +927,23 @@ document.addEventListener('DOMContentLoaded', () => {
         updateModelStrategy();
         renderHistorySidebar();
     }
-    
-    initializeApp();
-    
-    // --- EVENT LISTENERS ---
-    
-    // NOVI EVENT LISTENER za slajder da ažurira prozor
+
+    // ================================
+    // EVENT LISTENERS
+    // ================================
+
+    // Slajder i model strategy
     intelligenceSlider.addEventListener('input', () => {
         if (!modelSelectionPage.classList.contains('hidden')) {
             openModelSelectionPage();
         }
     });
-
     intelligenceSlider.addEventListener('change', updateModelStrategy);
+    
+    // Forme i poruke
     messageForm.addEventListener('submit', handleFormSubmit);
     
+    // Settings modal
     settingsButton.addEventListener('click', () => {
         appContainer.classList.remove('sidebar-open');
         settingsPage.classList.remove('hidden');
@@ -889,6 +951,7 @@ document.addEventListener('DOMContentLoaded', () => {
     closeSettingsButton.addEventListener('click', () => settingsPage.classList.add('hidden'));
     saveSettingsButton.addEventListener('click', saveSettings);
     
+    // Welcome overlay
     startChatButton.addEventListener('click', () => {
         welcomeOverlay.classList.remove('visible');
         localStorage.setItem('hasOnboarded', 'true');
@@ -899,13 +962,13 @@ document.addEventListener('DOMContentLoaded', () => {
             startNewChat();
         }
     });
-
     logoButton.addEventListener('click', () => welcomeOverlay.classList.add('visible'));
 
+    // Navigacija i sidebar
     historyButton.addEventListener('click', () => appContainer.classList.toggle('sidebar-open'));
-    
     newChatButton.addEventListener('click', startNewChat);
 
+    // History management
     historyList.addEventListener('click', (e) => {
         const menuButton = e.target.closest('.history-item-menu-button');
         if (menuButton) {
@@ -937,11 +1000,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
+    // Message input auto-resize
     messageInput.addEventListener('input', () => {
         messageInput.style.height = 'auto';
         messageInput.style.height = `${Math.min(messageInput.scrollHeight, 120)}px`;
     });
 
+    // Password toggle
     document.querySelectorAll('.toggle-password').forEach(button => {
         button.addEventListener('click', (e) => {
             const input = e.currentTarget.closest('.password-input-wrapper').querySelector('input');
@@ -956,6 +1021,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Help modal
     document.querySelectorAll('.help-button').forEach(button => {
         button.addEventListener('click', (e) => {
             const provider = e.currentTarget.dataset.provider;
@@ -965,11 +1031,10 @@ document.addEventListener('DOMContentLoaded', () => {
             helpModal.classList.remove('hidden');
         });
     });
-    
     closeHelpModalButton.addEventListener('click', () => helpModal.classList.add('hidden'));
 
+    // Model selection page
     openModelPageButton.addEventListener('click', openModelSelectionPage);
-
     closeModelPageButton.addEventListener('click', () => {
         modelSelectionPage.classList.add('hidden');
     });
@@ -1012,6 +1077,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Language menu
     langButton.addEventListener('click', (e) => { e.stopPropagation(); langMenu.classList.toggle('hidden'); });
     document.addEventListener('click', (e) => {
         if (!langButton.contains(e.target) && !langMenu.contains(e.target)) langMenu.classList.add('hidden');
@@ -1034,12 +1100,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isAIThinking && currentModelStrategy.length > 1) handleModelSwitch(true);
     });
     
+    // File upload
     uploadButton.addEventListener('click', (e) => { e.stopPropagation(); uploadOptions.classList.toggle('hidden'); });
     uploadImageButton.addEventListener('click', () => imageInputHidden.click());
     uploadDocButton.addEventListener('click', () => docInputHidden.click());
     imageInputHidden.addEventListener('change', (e) => handleFileSelect(e, 'image'));
     docInputHidden.addEventListener('change', (e) => handleFileSelect(e, 'doc'));
 
+    // History context menu
     pinChatBtn.addEventListener('click', () => {
         const chat = allChats.find(c => c.id === activeContextMenuChatId);
         if (chat) {
@@ -1078,4 +1146,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         historyItemMenu.classList.add('hidden');
     });
+
+    // ================================
+    // START APPLICATION
+    // ================================
+    
+    initializeApp();
 });
