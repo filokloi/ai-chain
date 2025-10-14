@@ -1,1 +1,28 @@
+<<<<<<< HEAD
 []
+=======
+[
+  "GPT-4o-2024-05-13",
+  "Claude 3.5 Sonnet",
+  "GPT-4-Turbo-2024-04-09",
+  "Claude 3 Opus",
+  "Gemini 1.5 Pro",
+  "Command R+",
+  "Llama-3-70B-Instruct",
+  "Qwen2-72B-Instruct",
+  "Mixtral-8x22B-Instruct-v0.1",
+  "GPT-4-0314",
+  "Claude 3 Sonnet",
+  "Mistral Large",
+  "Llama-3-8B-Instruct",
+  "Gemma-2-9B-It",
+  "Claude 3 Haiku",
+  "Llama-2-70B-Chat",
+  "Mixtral-8x7B-Instruct-v0.1",
+  "Starling-LM-7B-beta",
+  "Mistral-7B-Instruct-v0.2",
+  "Llama-2-13B-Chat",
+  "gemma-7b-it",
+  "Llama-2-7B-Chat"
+]
+>>>>>>> 9df90d2110b17a573e59c2e278b5e1bc12c38967
