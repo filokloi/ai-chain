@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- KONFIGURACIJA ---
-    const GITHUB_WHITELIST_URL = 'https://raw.githubusercontent.com/filokloi/ai-chain-config/refs/heads/main/priority_models.json';
+    const GITHUB_WHITELIST_URL = 'https://raw.githubusercontent.com/filokloi/ai-chain/main/priority_models.json';
+    const MODEL_RANKINGS_URL = 'model_rankings.json'; // UČITAVAMO LOKALNI FAJL!
 
     // --- LOKALIZACIJA (i18n) ---
     const translations = {
@@ -102,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let attachedFile = null;
     let dynamicStrategies = {};
     let freemiumWhitelist = [];
+    let modelRankings = []; // Ponovo uvedeno
     let currentLang = 'en';
     let allChats = [];
     let currentChatId = null;
@@ -187,11 +189,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Ponovo uvedena funkcija za rangiranje
+    async function fetchModelRankings() {
+        try {
+            const response = await fetch(MODEL_RANKINGS_URL, { cache: 'no-cache' });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            modelRankings = await response.json();
+            console.log("SUCCESS: Model rankings loaded from local project file.");
+        } catch (error) {
+            console.error("ERROR: Could not load model_rankings.json. Using A-Z fallback.", error);
+            modelRankings = [];
+        }
+    }
+
     async function fetchAndBuildStrategies(whitelist) {
         freemiumWhitelist = whitelist;
         try {
             const response = await fetch('https://openrouter.ai/api/v1/models');
-            if (!response.ok) throw new Error('Failed to fetch model rankings');
+            if (!response.ok) throw new Error('Failed to fetch model list');
             const { data } = await response.json();
             const allModels = data.map(model => {
                 if (model.id.includes('groq')) {
@@ -199,7 +214,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (model.id.startsWith('google/')) {
                     model.provider = 'google';
                 } else {
-                    model.provider = 'openrouter';
+                    const providerMap = { 'openai/': 'openai', 'anthropic/': 'anthropic', 'cohere/': 'cohere' };
+                    let foundProvider = 'openrouter';
+                    for (const prefix in providerMap) {
+                        if (model.id.startsWith(prefix)) {
+                            foundProvider = providerMap[prefix];
+                            break;
+                        }
+                    }
+                    model.provider = foundProvider;
                 }
                 return model;
             });
@@ -209,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const alwaysFreeModels = allModels.filter(m => (m.pricing.prompt === "0.000000" && m.pricing.completion === "0.000000") || m.id.endsWith(':free')).sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0));
             const validWhitelist = freemiumWhitelist.map(id => allModels.find(m => m.id === id)).filter(Boolean).map(model => {
-                model.provider = 'openrouter';
+                model.provider = model.provider || 'openrouter'; 
                 return model;
             });
             
@@ -232,29 +255,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (strategyKey !== 'economy') {
             if (apiKeys.openai) {
-                newStrategy.push({ id: 'gpt-4o', provider: 'openai', architecture: { modality: 'multimodal' } });
+                newStrategy.push({ id: 'openai/gpt-4o', provider: 'openai', architecture: { modality: 'multimodal' }, context_length: 128000 });
             }
             if (apiKeys.anthropic) {
-                newStrategy.push({ id: 'claude-3-5-sonnet-20240620', provider: 'anthropic', architecture: { modality: 'multimodal' } });
+                newStrategy.push({ id: 'anthropic/claude-3.5-sonnet-20240620', provider: 'anthropic', architecture: { modality: 'multimodal' }, context_length: 200000 });
             }
             if (apiKeys.cohere) {
-                newStrategy.push({ id: 'command-r-plus', provider: 'cohere', architecture: { modality: 'multimodal' } });
+                newStrategy.push({ id: 'cohere/command-r-plus', provider: 'cohere', architecture: { modality: 'multimodal' }, context_length: 128000 });
             }
             if (apiKeys.zhipu) {
-                newStrategy.push({ id: 'glm-4', provider: 'zhipu', architecture: { modality: 'text' } });
+                newStrategy.push({ id: 'glm-4', provider: 'zhipu', architecture: { modality: 'text' }, context_length: 128000 });
             }
             if (apiKeys.moonshot) {
-                newStrategy.push({ id: 'moonshot-v1-128k', provider: 'moonshot', architecture: { modality: 'text' } });
+                newStrategy.push({ id: 'moonshot-v1-128k', provider: 'moonshot', architecture: { modality: 'text' }, context_length: 128000 });
             }
         }
 
         if (dynamicStrategies[strategyKey]) {
             const fallbackStrategy = dynamicStrategies[strategyKey].filter(modelInfo => {
-                if ((modelInfo.provider === 'openai' && apiKeys.openai) ||
-                    (modelInfo.provider === 'anthropic' && apiKeys.anthropic) ||
-                    (modelInfo.provider === 'cohere' && apiKeys.cohere) ||
-                    (modelInfo.provider === 'zhipu' && apiKeys.zhipu) ||
-                    (modelInfo.provider === 'moonshot' && apiKeys.moonshot)) {
+                if (newStrategy.some(m => m.id.endsWith(modelInfo.id))) {
                     return false;
                 }
                 
@@ -299,8 +318,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 break; 
             }
             
-            const { id: model, provider } = currentAttempt;
+            let { id: model, provider } = currentAttempt;
             const apiKey = apiKeys[provider];
+            const modelForApi = model.includes('/') ? model.split('/')[1] : model;
 
             try {
                 let endpoint = '';
@@ -313,13 +333,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     case 'openai':
                         endpoint = 'https://api.openai.com/v1/chat/completions';
                         headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
-                        body = { model: model, messages: messagesForApi, max_tokens: 4096 };
+                        body = { model: 'gpt-4o', messages: messagesForApi, max_tokens: 4096 };
                         break;
                     
                     case 'anthropic':
                         endpoint = 'https://api.anthropic.com/v1/messages';
                         headers = { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' };
-                        body = { model: model, messages: messagesForApi, max_tokens: 4096 };
+                        body = { model: 'claude-3-5-sonnet-20240620', messages: messagesForApi, max_tokens: 4096 };
                         break;
 
                     case 'cohere':
@@ -327,26 +347,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
                         const cohereMessages = messagesForApi.slice(0, -1).map(msg => ({ role: msg.role === 'user' ? 'USER' : 'CHATBOT', message: msg.content }));
                         const latestMessage = messagesForApi[messagesForApi.length - 1];
-                        body = { model: model, message: latestMessage.content, chat_history: cohereMessages };
+                        body = { model: 'command-r-plus', message: latestMessage.content, chat_history: cohereMessages };
                         break;
                     
                     case 'zhipu':
                         const token = await generateZhipuToken(apiKey);
                         endpoint = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
                         headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
-                        body = { model: model, messages: messagesForApi };
+                        body = { model: 'glm-4', messages: messagesForApi };
                         break;
 
                     case 'moonshot':
                         endpoint = 'https://api.moonshot.cn/v1/chat/completions';
                         headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
-                        body = { model: model, messages: messagesForApi };
+                        body = { model: 'moonshot-v1-128k', messages: messagesForApi };
                         break;
 
                     case 'groq':
                         endpoint = 'https://api.groq.com/openai/v1/chat/completions';
                         headers = { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
-                        body = { model: model, messages: messagesForApi };
+                        body = { model: modelForApi, messages: messagesForApi };
                         break;
                     
                     case 'google':
@@ -371,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     aiMessage = data.content?.[0]?.text;
                 } else if (provider === 'cohere') {
                     aiMessage = data.text;
-                } else { // OpenAI, Groq, OpenRouter, Zhipu, Moonshot
+                } else { 
                     aiMessage = data.choices?.[0]?.message?.content;
                 }
 
@@ -396,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 
-                if (handleModelSwitch(true)) { // suppressMessage = true
+                if (handleModelSwitch(true)) { 
                      errorToDisplay += `\n\nSwitching to **${currentModelStrategy[currentModelIndex].provider}/${currentModelStrategy[currentModelIndex].id}**.`;
                 } else {
                     errorToDisplay = translations[currentLang].allModelsFailed;
@@ -478,7 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sender === 'ai' || sender === 'ai-system') {
                 textNode.innerHTML = marked.parse(text, { breaks: true });
             } else {
-                const escapedText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                const escapedText = text.replace(/</g, "<").replace(/>/g, ">");
                 textNode.innerHTML = escapedText.replace(/\n/g, '<br>');
             }
             messageDiv.appendChild(textNode);
@@ -689,81 +709,162 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveAllChats() {
         localStorage.setItem('ai-chain-all-chats', JSON.stringify(allChats));
     }
+    
+    // AŽURIRANA FUNKCIJA ZA PRIKAZ SVIH IKONICA
+    function getModelCapabilitiesHTML(model) {
+        let html = '';
+        const isMultimodal = model.architecture?.modality === 'multimodal' || model.id.includes('vision') || model.id.includes('claude-3') || model.id.includes('gpt-4o');
+        const hasLargeContext = (model.context_length || 0) >= 128000;
+        
+        // Lista najnaprednijih modela koji imaju "thinking" i "tool" sposobnosti
+        const topTierModels = [
+            'openai/gpt-4o',
+            'anthropic/claude-3.5-sonnet',
+            'cohere/command-r-plus',
+            'glm-4'
+        ];
+        
+        const isTopTier = topTierModels.some(topModel => model.id.includes(topModel));
+
+        if (isTopTier) {
+            html += `<i class="fa-solid fa-brain" title="Advanced Reasoning"></i>`;
+            html += `<i class="fa-solid fa-screwdriver-wrench" title="Tool Use / Function Calling"></i>`;
+        }
+        
+        if (isMultimodal) {
+            html += `<i class="fa-solid fa-eye" title="Image Support (Vision)"></i>`;
+        }
+        
+        if (hasLargeContext) {
+            html += `<i class="fa-solid fa-file-lines" title="Large Context Window"></i>`;
+        }
+
+        return html;
+    }
+
+    function renderProviderView(modelSelectionBody, searchTerm) {
+        const modelsByProvider = currentModelStrategy.reduce((acc, model, index) => {
+            if (!acc[model.provider]) acc[model.provider] = [];
+            acc[model.provider].push({ ...model, index });
+            return acc;
+        }, {});
+
+        Object.entries(modelsByProvider).forEach(([provider, models]) => {
+            const filteredModels = models.filter(m => m.id.toLowerCase().includes(searchTerm));
+            if (filteredModels.length === 0) return;
+
+            const providerSection = document.createElement('div');
+            providerSection.className = 'provider-section';
+            providerSection.innerHTML = `<h3>${provider}</h3>`;
+            const modelsList = document.createElement('div');
+            modelsList.className = 'models-list';
+            
+            filteredModels.forEach(model => {
+                const modelOption = document.createElement('div');
+                modelOption.className = 'model-option';
+                if (model.index === currentModelIndex) modelOption.classList.add('active');
+                modelOption.dataset.modelIndex = model.index;
+                modelOption.innerHTML = `
+                    <div class="model-info">
+                        <span class="model-name">${model.id}</span>
+                    </div>
+                    <div class="model-status">
+                        <div class="model-capabilities">${getModelCapabilitiesHTML(model)}</div>
+                        ${model.index === currentModelIndex ? '<i class="fa-solid fa-check"></i>' : ''}
+                    </div>
+                `;
+                modelsList.appendChild(modelOption);
+            });
+            providerSection.appendChild(modelsList);
+            modelSelectionBody.appendChild(providerSection);
+        });
+    }
+
+    function renderHierarchyView(modelSelectionBody, searchTerm) {
+        let sortedModels = [...currentModelStrategy].map((model, index) => ({ ...model, index }));
+
+        if (modelRankings.length > 0) {
+            console.log("Sorting with fetched ranking list.");
+            sortedModels.sort((a, b) => {
+                const cleanA = a.id.split('/').pop().toLowerCase().replace(/-2024\d{4}$/, '');
+                const cleanB = b.id.split('/').pop().toLowerCase().replace(/-2024\d{4}$/, '');
+                const rankA = modelRankings.findIndex(name => cleanA.includes(name.toLowerCase().replace(/\s/g, '-')));
+                const rankB = modelRankings.findIndex(name => cleanB.includes(name.toLowerCase().replace(/\s/g, '-')));
+                
+                if (rankA === -1 && rankB === -1) return a.id.localeCompare(b.id);
+                if (rankA === -1) return 1;
+                if (rankB === -1) return -1;
+                return rankA - rankB;
+            });
+        } else {
+            console.log("Ranking list not available. Sorting A-Z.");
+            sortedModels.sort((a, b) => a.id.localeCompare(b.id));
+        }
+        
+        const finalFilteredModels = sortedModels.filter(m => m.id.toLowerCase().includes(searchTerm));
+        
+        const titleText = modelRankings.length > 0 ? "Models by Hierarchy" : "All Available Models (A-Z)";
+        modelSelectionBody.innerHTML = `<h3 class="model-selection-filter-title">${titleText}</h3>`;
+
+        finalFilteredModels.forEach(model => {
+            const modelOption = document.createElement('div');
+            modelOption.className = 'model-option';
+            if (model.index === currentModelIndex) modelOption.classList.add('active');
+            modelOption.dataset.modelIndex = model.index;
+            modelOption.innerHTML = `
+                <div class="model-info">
+                    <span class="model-name">${model.id}</span>
+                    <span class="model-provider">${model.provider}</span>
+                </div>
+                <div class="model-status">
+                    <div class="model-capabilities">${getModelCapabilitiesHTML(model)}</div>
+                    ${model.index === currentModelIndex ? '<i class="fa-solid fa-check"></i>' : ''}
+                </div>
+            `;
+            modelSelectionBody.appendChild(modelOption);
+        });
+    }
 
     function openModelSelectionPage() {
         const modelSelectionBody = modelSelectionPage.querySelector('.model-selection-body');
+        const searchTerm = modelSearchInput.value.toLowerCase();
         
+        modelSelectionPage.classList.remove('hidden'); 
+        modelSelectionBody.innerHTML = ''; 
+
         if (currentModelStrategy.length === 0) {
             modelSelectionBody.innerHTML = `<p style="padding: 2rem; text-align: center; color: var(--text-secondary-color);">No models available. Please configure your API keys first.</p>`;
         } else {
-            modelSelectionBody.innerHTML = '';
-            
-            const modelsByProvider = currentModelStrategy.reduce((acc, model, index) => {
-                if (!acc[model.provider]) {
-                    acc[model.provider] = [];
-                }
-                acc[model.provider].push({...model, index});
-                return acc;
-            }, {});
-            
-            Object.entries(modelsByProvider).forEach(([provider, models]) => {
-                const providerSection = document.createElement('div');
-                providerSection.className = 'provider-section';
-                providerSection.innerHTML = `<h3>${provider}</h3>`;
-                
-                const modelsList = document.createElement('div');
-                modelsList.className = 'models-list';
-                
-                models.forEach(model => {
-                    const modelOption = document.createElement('div');
-                    modelOption.className = 'model-option';
-                    if (model.index === currentModelIndex) {
-                        modelOption.classList.add('active');
-                    }
-                    modelOption.dataset.modelIndex = model.index;
-                    
-                    modelOption.innerHTML = `
-                        <div class="model-info">
-                            <span class="model-name">${model.id}</span>
-                        </div>
-                        <div class="model-status">
-                            ${model.index === currentModelIndex ? '<i class="fa-solid fa-check"></i>' : ''}
-                        </div>
-                    `;
-                    modelsList.appendChild(modelOption);
-                });
-                
-                providerSection.appendChild(modelsList);
-                modelSelectionBody.appendChild(providerSection);
-            });
+            if (viewHierarchyButton.classList.contains('active')) {
+                renderHierarchyView(modelSelectionBody, searchTerm);
+            } else {
+                renderProviderView(modelSelectionBody, searchTerm);
+            }
         }
-        
-        modelSelectionPage.classList.add('visible');
     }
 
     async function initializeApp() {
-        const savedChats = localStorage.getItem('ai-chain-all-chats');
+        // Sada možemo bezbedno da sačekamo, jer je fajl lokalni
+        await fetchModelRankings(); 
+        const whitelist = await fetchWhitelist();
+        await fetchAndBuildStrategies(whitelist);
         
         loadSettings();
-        
         const preferredLang = localStorage.getItem('preferredLanguage') || 'en';
         setLanguage(preferredLang);
 
+        const savedChats = localStorage.getItem('ai-chain-all-chats');
         if (savedChats && JSON.parse(savedChats).length > 0) {
             allChats = JSON.parse(savedChats);
             const lastChat = allChats.sort((a, b) => b.lastUpdated - a.lastUpdated)[0];
             loadChat(lastChat.id);
-        }
-        
-        if (!localStorage.getItem('hasOnboarded')) {
-            welcomeOverlay.classList.add('visible');
-        } else if (!savedChats || JSON.parse(savedChats).length === 0) {
+        } else if (!localStorage.getItem('hasOnboarded')) {
+            welcomeOverlay.classList.remove('visible');
+        } else {
             startNewChat();
         }
         
-        const whitelist = await fetchWhitelist();
-        await fetchAndBuildStrategies(whitelist);
-        updateModelStrategy(); 
+        updateModelStrategy();
         renderHistorySidebar();
     }
     
@@ -771,6 +872,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- EVENT LISTENERS ---
     
+    // NOVI EVENT LISTENER za slajder da ažurira prozor
+    intelligenceSlider.addEventListener('input', () => {
+        if (!modelSelectionPage.classList.contains('hidden')) {
+            openModelSelectionPage();
+        }
+    });
+
     intelligenceSlider.addEventListener('change', updateModelStrategy);
     messageForm.addEventListener('submit', handleFormSubmit);
     
@@ -863,7 +971,7 @@ document.addEventListener('DOMContentLoaded', () => {
     openModelPageButton.addEventListener('click', openModelSelectionPage);
 
     closeModelPageButton.addEventListener('click', () => {
-        modelSelectionPage.classList.remove('visible');
+        modelSelectionPage.classList.add('hidden');
     });
 
     modelSelectionPage.addEventListener('click', (e) => {
@@ -873,10 +981,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isNaN(modelIndex)) {
                 currentModelIndex = modelIndex;
                 updateModelStatus();
-                modelSelectionPage.classList.remove('visible');
+                modelSelectionPage.classList.add('hidden');
             }
         } else if (e.target === modelSelectionPage) {
-            modelSelectionPage.classList.remove('visible');
+            modelSelectionPage.classList.add('hidden');
         }
     });
 
@@ -887,24 +995,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     if (modelSearchInput) {
-        modelSearchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            console.log('Pretraga modela:', searchTerm);
-        });
+        modelSearchInput.addEventListener('input', openModelSelectionPage); 
     }
     
     if (viewHierarchyButton && viewProviderButton) {
         viewHierarchyButton.addEventListener('click', () => {
             viewHierarchyButton.classList.add('active');
             viewProviderButton.classList.remove('active');
-            console.log('Prikaz po snazi modela');
             openModelSelectionPage(); 
         });
         
         viewProviderButton.addEventListener('click', () => {
             viewProviderButton.classList.add('active');
             viewHierarchyButton.classList.remove('active');
-            console.log('Prikaz po provajderu');
             openModelSelectionPage();
         });
     }
