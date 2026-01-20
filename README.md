@@ -6,6 +6,8 @@
 
 This contains everything you need to run your app locally.
 
+> **Built with [Google AI Studio](https://aistudio.google.com/)** 🚀
+
 View your app in AI Studio: https://ai.studio/apps/drive/1ECaI0aWTwZ2oBv_FwZXUL-8xZyYdmTWB
 
 ## Run Locally
