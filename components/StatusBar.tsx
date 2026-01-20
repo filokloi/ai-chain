@@ -18,7 +18,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
     onOpenModelSelection, onForceSwitch, isThinking, modelCount, currentModelIdx
 }) => {
     return (
-        <footer className="p-4 border-t border-[--border-color] flex-shrink-0">
+        <footer className="p-4 border-t border-[--border-color] flex-shrink-0 mt-auto bg-[#1a1a1a]">
             <div className="mb-4">
                 <div className="flex justify-between text-xs text-[--text-secondary-color] px-1 mb-2">
                     <span>Economy</span>
@@ -56,7 +56,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                 </div>
             </div>
             {/* FIX: Removed non-standard `jsx` prop from style tag. */}
-             <style>{`
+            <style>{`
                 .slider::-webkit-slider-thumb {
                     -webkit-appearance: none; appearance: none;
                     width: 12px; height: 24px;
