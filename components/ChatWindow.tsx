@@ -61,7 +61,7 @@ const MessageActionsToolbar: React.FC<{
             setTimeout(() => setIsCopied(false), 2000);
         });
     };
-    
+
     const handleShare = () => {
         const contentToCopy = message.content || '';
         navigator.clipboard.writeText(contentToCopy).then(() => {
@@ -88,7 +88,7 @@ const ToolCallMessage: React.FC<{ toolCall: ToolCall }> = ({ toolCall }) => (
     <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 my-2 text-sm">
         <div className="flex items-center gap-2 text-gray-400">
             <div className="w-5 h-5 flex items-center justify-center rounded-full bg-blue-500/30">
-                 <i className="fa-solid fa-screwdriver-wrench text-xs text-blue-300"></i>
+                <i className="fa-solid fa-screwdriver-wrench text-xs text-blue-300"></i>
             </div>
             <span>Using tool: <strong>{toolCall.function.name}</strong></span>
         </div>
@@ -105,48 +105,48 @@ const Message: React.FC<{
     const { role, content, fileInfo, model, tool_calls } = message;
 
     return (
-    <div className={`w-full flex ${role === 'user' ? 'justify-end' : 'justify-start'}`}>
-        <div className="group relative max-w-[85%] lg:max-w-[75%]">
-            <div className={`p-3 rounded-2xl mb-1 ${role === 'user' ? 'bg-[--primary-color] text-white rounded-br-lg' : 'bg-[--surface-color] text-[--text-color] rounded-bl-lg'}`}>
-                {fileInfo && fileInfo.length > 0 && (
-                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
-                        {fileInfo.map((file, index) => (
-                            file.type === 'image' ? (
-                                <img key={index} src={(file as ImageFile).dataUrl} alt={file.name} className="rounded-lg object-cover w-full h-auto" />
-                            ) : (
-                                <div key={index} className="bg-black/20 p-2 rounded-lg text-sm border border-white/20 flex items-center gap-2">
-                                    <i className="fa-solid fa-file-lines"></i>
-                                    <span className="truncate">{file.name}</span>
-                                </div>
-                            )
-                        ))}
-                    </div>
-                )}
-                {content && <div className="prose prose-invert max-w-none prose-p:my-2 prose-pre:my-2 ai-message">
-                    <Markdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>{content}</Markdown>
-                </div>}
-                 {tool_calls && tool_calls.map((tc, index) => <ToolCallMessage key={index} toolCall={tc} />)}
-            </div>
-            
-            <div className={`pl-2 mb-4 ${role === 'user' ? 'flex justify-end' : ''}`}>
-                {role === 'assistant' ? (
-                    <>
-                         {model && <p className="text-xs text-gray-500/80 italic mb-2 mr-2">answered by {model.split('/').pop()}</p>}
-                         <MessageActionsToolbar message={message} onRegenerate={onRegenerate} onFeedback={onFeedback} onDelete={onDelete} />
-                    </>
-                ) : (
-                    <button 
-                        onClick={() => onDelete(message.id)} 
-                        className="text-gray-500 hover:text-red-400 text-xs mt-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1" 
-                        title="Delete Message"
-                    >
-                        <i className="fa-solid fa-trash-can"></i> Delete
-                    </button>
-                )}
+        <div className={`w-full flex ${role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className="group relative max-w-[85%] lg:max-w-[75%]">
+                <div className={`p-3 rounded-2xl mb-1 ${role === 'user' ? 'bg-[--primary-color] text-white rounded-br-lg' : 'bg-[--surface-color] text-[--text-color] rounded-bl-lg'}`}>
+                    {fileInfo && fileInfo.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
+                            {fileInfo.map((file, index) => (
+                                file.type === 'image' ? (
+                                    <img key={index} src={(file as ImageFile).dataUrl} alt={file.name} className="rounded-lg object-cover w-full h-auto" />
+                                ) : (
+                                    <div key={index} className="bg-black/20 p-2 rounded-lg text-sm border border-white/20 flex items-center gap-2">
+                                        <i className="fa-solid fa-file-lines"></i>
+                                        <span className="truncate">{file.name}</span>
+                                    </div>
+                                )
+                            ))}
+                        </div>
+                    )}
+                    {content && <div className="prose prose-invert max-w-none prose-p:my-2 prose-pre:my-2 ai-message">
+                        <Markdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>{content}</Markdown>
+                    </div>}
+                    {tool_calls && tool_calls.map((tc, index) => <ToolCallMessage key={index} toolCall={tc} />)}
+                </div>
+
+                <div className={`pl-2 mb-4 ${role === 'user' ? 'flex justify-end' : ''}`}>
+                    {role === 'assistant' ? (
+                        <>
+                            {model && <p className="text-xs text-gray-500/80 italic mb-2 mr-2">answered by {model.split('/').pop()}</p>}
+                            <MessageActionsToolbar message={message} onRegenerate={onRegenerate} onFeedback={onFeedback} onDelete={onDelete} />
+                        </>
+                    ) : (
+                        <button
+                            onClick={() => onDelete(message.id)}
+                            className="text-gray-500 hover:text-red-400 text-xs mt-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
+                            title="Delete Message"
+                        >
+                            <i className="fa-solid fa-trash-can"></i> Delete
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
 };
 
 const TypingIndicator: React.FC<{ model: ModelWithProvider | null }> = ({ model }) => {
@@ -174,7 +174,7 @@ const formatFileSize = (bytes: number): string => {
 const FilePreview: React.FC<{ file: AttachedFile, onRemove: () => void }> = ({ file, onRemove }) => (
     <div className="bg-gray-800/80 border border-gray-700 rounded-lg p-2 flex items-center gap-2 max-w-xs text-sm relative">
         {file.type === 'image' ? (
-            <img src={(file as ImageFile).dataUrl} alt={file.name} className="w-10 h-10 object-cover rounded"/>
+            <img src={(file as ImageFile).dataUrl} alt={file.name} className="w-10 h-10 object-cover rounded" />
         ) : (
             <i className="fa-solid fa-file-lines text-[--text-secondary-color] text-2xl w-10 text-center"></i>
         )}
@@ -200,13 +200,13 @@ export const ChatWindow: React.FC<{
     const [text, setText] = useState('');
     const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
     const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
-    
+
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
     const docInputRef = useRef<HTMLInputElement>(null);
     const attachButtonRef = useRef<HTMLDivElement>(null);
-    
+
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [chat?.messages, thinkingModel]);
@@ -238,7 +238,7 @@ export const ChatWindow: React.FC<{
         setAttachedFiles([]);
         // Reset textarea height
         if (textareaRef.current) {
-             textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = 'auto';
         }
     };
 
@@ -286,8 +286,8 @@ export const ChatWindow: React.FC<{
                         );
                         const parser = new DOMParser();
                         allSections.forEach((section: any) => {
-                           const doc = parser.parseFromString(section, 'application/xhtml+xml');
-                           content += doc.body.textContent || '';
+                            const doc = parser.parseFromString(section, 'application/xhtml+xml');
+                            content += doc.body.textContent || '';
                         });
                     } else if (['txt', 'csv'].includes(extension)) {
                         subtype = extension as 'txt' | 'csv';
@@ -306,17 +306,29 @@ export const ChatWindow: React.FC<{
                 alert(`Failed to read file: ${file.name}. It might be corrupted or in an unsupported format.`);
             }
         }
-        
+
         setAttachedFiles([...newFiles]);
         e.target.value = ''; // Reset input
         setIsAttachMenuOpen(false);
     };
-    
+
     const placeholderText = currentModel ? `Message ${currentModel.name || currentModel.id}...` : "Enter a message...";
 
     return (
-        <main className="flex-grow flex flex-col overflow-hidden">
-            <section className="flex-grow overflow-y-auto p-4 space-y-4">
+        <main className="flex-grow flex flex-col overflow-hidden min-h-0 relative">
+            <section
+                className="flex-grow overflow-y-auto p-4 space-y-4"
+                onScroll={(e) => {
+                    const target = e.currentTarget;
+                    const isNearBottom = target.scrollHeight - target.scrollTop - target.clientHeight < 100;
+                    const btn = document.getElementById('scroll-to-bottom');
+                    if (btn) {
+                        // Show button if NOT near bottom
+                        btn.style.opacity = isNearBottom ? '0' : '1';
+                        btn.style.pointerEvents = isNearBottom ? 'none' : 'auto';
+                    }
+                }}
+            >
                 {chat?.messages.length === 0 && (
                     <div className="text-center text-[--text-secondary-color] h-full flex items-center justify-center">Welcome! Start the conversation...</div>
                 )}
@@ -326,16 +338,25 @@ export const ChatWindow: React.FC<{
                 {thinkingModel && <TypingIndicator model={thinkingModel} />}
                 <div ref={messagesEndRef} />
             </section>
+            {/* Scroll to Bottom Button (Visible when scrolled up) */}
+            <button
+                id="scroll-to-bottom"
+                onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })}
+                className="absolute bottom-24 right-6 w-10 h-10 bg-[--surface-color] border border-[--border-color] text-[--primary-color] rounded-full shadow-lg flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-10"
+                style={{ opacity: '0' }}
+            >
+                <i className="fa-solid fa-arrow-down"></i>
+            </button>
             <div className="p-4 flex-shrink-0 bg-[--bg-color] border-t border-[--border-color]">
                 {attachedFiles.length > 0 && (
-                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 mb-2">
-                        {attachedFiles.map((file, i) => 
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 mb-2">
+                        {attachedFiles.map((file, i) =>
                             <FilePreview key={i} file={file} onRemove={() => setAttachedFiles(files => files.filter((_, idx) => idx !== i))} />
                         )}
                     </div>
                 )}
                 <form onSubmit={handleFormSubmit} className="flex gap-2 bg-[--surface-color] rounded-2xl p-2 border border-[--border-color] focus-within:border-[--primary-color] transition-colors">
-                     <div ref={attachButtonRef} className="relative self-end">
+                    <div ref={attachButtonRef} className="relative self-end">
                         <button type="button" onClick={() => setIsAttachMenuOpen(prev => !prev)} title="Attach files" className={`p-3 rounded-full hover:bg-white/10 ${attachedFiles.length > 0 ? 'text-[--primary-color]' : 'text-[--text-secondary-color]'}`}>
                             <i className="fa-solid fa-paperclip"></i>
                         </button>
@@ -350,17 +371,17 @@ export const ChatWindow: React.FC<{
                         ref={textareaRef}
                         value={text}
                         onChange={(e) => setText(e.target.value)}
-                        onKeyDown={(e) => { 
-                            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { 
-                                e.preventDefault(); 
-                                handleFormSubmit(e); 
-                            } 
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                                e.preventDefault();
+                                handleFormSubmit(e);
+                            }
                         }}
                         placeholder={text ? '' : placeholderText}
                         rows={1}
                         className="flex-grow bg-transparent border-none outline-none text-[--text-color] resize-none py-3"
                     />
-                    <button 
+                    <button
                         type={thinkingModel ? "button" : "submit"}
                         onClick={thinkingModel ? onStopGeneration : undefined}
                         disabled={!thinkingModel && !text.trim() && attachedFiles.length === 0}
