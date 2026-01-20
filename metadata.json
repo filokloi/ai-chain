@@ -1,0 +1,5 @@
+{
+  "name": "AI Chain",
+  "description": "A smart chatbot that intelligently switches between different AI model providers to ensure uninterrupted conversations, even when rate limits are hit. Configure your own cloud API keys or connect to a local LLM.",
+  "requestFramePermissions": []
+}

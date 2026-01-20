@@ -1,275 +1,83 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Chain</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.93/epub.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --surface-color: #2c2c2c;
+            --primary-color: #4a90e2;
+            --text-color: #f0f0f0;
+            --text-secondary-color: #a0a0a0;
+            --border-color: #444;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+        }
+        .ai-message pre {
+            background-color: var(--bg-color);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-top: 0.5rem;
+        }
+        .ai-message code {
+            background-color: var(--bg-color);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .hidden {
+            display: none !important;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-markdown": "https://aistudiocdn.com/react-markdown@^10.1.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.27.0",
+    "remark-gfm": "https://aistudiocdn.com/remark-gfm@^4.0.1"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
 </head>
 <body>
-    <div id="app-container">
-        <aside id="history-sidebar">
-            <div class="sidebar-header">
-                <button id="new-chat-button" class="sidebar-button" data-i18n-title-key="newChatTitle" title="New Chat"><i class="fa-solid fa-square-plus"></i> <span data-i18n-key="newChatLabel">New Chat</span></button>
-            </div>
-            <div class="sidebar-search">
-                <i class="fa-solid fa-search"></i>
-                <input type="text" id="history-search-input" data-i18n-placeholder-key="searchHistoryPlaceholder" placeholder="Search history...">
-            </div>
-            <div class="sidebar-content">
-                <ul id="history-list">
-                </ul>
-            </div>
-            <div class="sidebar-footer">
-                <button id="clear-history-button" title="Clear All History"><i class="fa-solid fa-trash-can"></i> <span data-i18n-key="clearHistoryLabel">Clear History</span></button>
-            </div>
-        </aside>
-
-        <div id="main-content">
-            <header class="app-header">
-                <div class="header-left">
-                    <button id="history-button" class="control-button" data-i18n-title-key="historyTitle" title="History"><i class="fa-solid fa-bars"></i></button>
-                    <div class="logo" id="logo-button">
-                        <i class="fa-solid fa-link"></i>
-                        <h1>AI Chain</h1>
-                    </div>
-                </div>
-                <div class="controls">
-                    <div class="lang-control">
-                        <button id="lang-button" class="control-button lang-display-button">
-                        </button>
-                        <div id="lang-menu" class="hidden">
-                            <a href="#" data-lang="en"><img src="https://flagcdn.com/w20/gb.png" alt="English"> EN</a>
-                            <a href="#" data-lang="sr"><img src="https://flagcdn.com/w20/rs.png" alt="Srpski"> RS</a>
-                            <a href="#" data-lang="de"><img src="https://flagcdn.com/w20/de.png" alt="Deutsch"> DE</a>
-                            <a href="#" data-lang="es"><img src="https://flagcdn.com/w20/es.png" alt="Español"> ES</a>
-                            <a href="#" data-lang="fr"><img src="https://flagcdn.com/w20/fr.png" alt="Français"> FR</a>
-                            <a href="#" data-lang="zh"><img src="https://flagcdn.com/w20/cn.png" alt="中文"> CN</a>
-                            <a href="#" data-lang="ru"><img src="https://flagcdn.com/w20/ru.png" alt="Русский"> RU</a>
-                            <a href="#" data-lang="ja"><img src="https://flagcdn.com/w20/jp.png" alt="日本語"> JP</a>
-                        </div>
-                    </div>
-                    <button id="settings-button" class="control-button">
-                        <i class="fa-solid fa-sliders"></i>
-                    </button>
-                </div>
-            </header>
-
-            <div id="welcome-overlay">
-                <div class="welcome-content">
-                    <div class="logo">
-                        <i class="fa-solid fa-link"></i>
-                        <h1>AI Chain</h1>
-                    </div>
-                    <p data-i18n-key="welcomeSlogan">One chat, use all your free AI models, uninterrupted.</p>
-                    <button id="start-chat-button" data-i18n-key="startChat">Start Chatting</button>
-                </div>
-                <div id="dynamic-model-list-container">
-                    <h3 data-i18n-key="topModelsTitle">Today's Top Models</h3>
-                    <div class="scrolling-list-viewport">
-                        <ul id="model-ranking-list">
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <main id="chat-container">
-                <section id="messages-section">
-                </section>
-            </main>
-
-            <footer class="app-footer">
-                <div id="potentiometer-container">
-                    <div class="potentiometer-labels">
-                        <span data-i18n-key="economy">Economy</span>
-                        <span data-i18n-key="balanced">Balanced</span>
-                        <span data-i18n-key="power">Max. Power</span>
-                    </div>
-                    <div class="potentiometer-track">
-                        <div class="potentiometer-triangle"></div>
-                        <input type="range" min="1" max="100" value="100" class="slider" id="intelligence-slider">
-                    </div>
-                </div>
-                <div id="file-preview-container">
-                </div>
-                <form id="message-form">
-                    <div id="upload-menu-container">
-                        <button type="button" id="upload-button" class="input-button">
-                            <i class="fa-solid fa-paperclip"></i>
-                        </button>
-                        <div id="upload-options" class="hidden">
-                            <button type="button" id="upload-image-button" class="upload-option" title="Upload Image" data-i18n-title-key="uploadImageTitle"><i class="fa-solid fa-image"></i></button>
-                            <button type="button" id="upload-doc-button" class="upload-option" title="Upload Document" data-i18n-title-key="uploadDocTitle"><i class="fa-solid fa-file-lines"></i></button>
-                        </div>
-                    </div>
-                    <textarea id="message-input" placeholder="Enter a message..." rows="1" data-i18n-key="messagePlaceholder"></textarea>
-                    <button type="submit" id="send-button" class="input-button">
-                        <i class="fa-solid fa-arrow-up"></i>
-                    </button>
-                </form>
-                <div class="status-bar">
-                    <div id="current-model-display" class="status-bar-item">
-                        <span data-i18n-key="currentModelLabel">Current:</span>
-                        <strong id="current-model-name" data-i18n-key="notConfigured">Not Configured</strong>
-                    </div>
-
-                    <div class="status-bar-item status-bar-center">
-                        <button id="force-switch-back-button" class="control-button" title="Test Previous Model" data-i18n-title-key="forceSwitchBackLabel">
-                            <i class="fa-solid fa-backward"></i>
-                        </button>
-                        <button id="open-model-page-button" class="footer-action-button" data-i18n-key="selectModelButton">
-                            Select Model
-                        </button>
-                        <button id="force-switch-button" class="control-button" title="Test Next Model" data-i18n-title-key="forceSwitchLabel">
-                            <i class="fa-solid fa-forward"></i>
-                        </button>
-                    </div>
-
-                    <div class="fallback-models status-bar-item">
-                        <div>
-                            <span data-i18n-key="fallbackModelLabel">Fallback:</span>
-                            <span id="fallback-models-list">None</span>
-                        </div>
-                    </div>
-                </div>
-            </footer>
-            
-            <div id="settings-page" class="hidden">
-                <div class="settings-content">
-                    <header class="settings-header">
-                        <div>
-                            <h2 data-i18n-key="settingsTitle">API Key Settings</h2>
-                            <p class="settings-motivation" data-i18n-key="settingsMotivation">Connect your free API keys to unlock the full potential of AI Chain. Your keys are stored securely in your browser and never leave your device.</p>
-                        </div>
-                        <button id="close-settings-button" class="close-button">&times;</button>
-                    </header>
-                    <section class="settings-body">
-                        <div class="settings-layout">
-                            <div class="settings-column">
-                                <fieldset>
-                                    <legend data-i18n-key="essentialKeys">Essential</legend>
-                                    <div class="api-key-group">
-                                        <label for="openrouter-key-input">
-                                            <a href="https://openrouter.ai/keys" target="_blank">OpenRouter Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                                        </label>
-                                        <p class="key-description" data-i18n-key="openrouterDescription">"Universal Key" - Access to dozens of AI models (recommended).</p>
-                                        <div class="password-input-wrapper">
-                                            <input type="password" id="openrouter-key-input" placeholder="sk-or-v1...">
-                                            <button class="toggle-password"><i class="fa-solid fa-eye"></i></button>
-                                            <button class="help-button" data-provider="OpenRouter">?</button>
-                                        </div>
-                                    </div>
-                                    <div class="api-key-group">
-                                        <label for="groq-key-input">
-                                            <a href="https://console.groq.com/keys" target="_blank">Groq Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                                        </label>
-                                        <p class="key-description" data-i18n-key="groqDescription">"Sports Car" - Access to the fastest models for instant answers.</p>
-                                        <div class="password-input-wrapper">
-                                            <input type="password" id="groq-key-input" placeholder="gsk_...">
-                                            <button class="toggle-password"><i class="fa-solid fa-eye"></i></button>
-                                            <button class="help-button" data-provider="Groq">?</button>
-                                        </div>
-                                    </div>
-                                </fieldset>
-                            </div>
-                            <div class="settings-column">
-                                <fieldset>
-                                    <legend data-i18n-key="powerUserKeys">Premium Power Access</legend>
-                                    <div class="api-key-group">
-                                        <label for="google-key-input"><a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
-                                        <p class="key-description" data-i18n-key="googleDescription">"Reliable Helper" - Direct access to Google's Gemini models.</p>
-                                        <div class="password-input-wrapper"><input type="password" id="google-key-input" placeholder="AIzaSy..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Google">?</button></div>
-                                    </div>
-                                    <div class="api-key-group">
-                                        <label for="openai-key-input"><a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
-                                        <p class="key-description" data-i18n-key="openaiDescription">"Industry Leader" - Access to GPT-4o, GPT-4 Turbo, etc.</p>
-                                        <div class="password-input-wrapper"><input type="password" id="openai-key-input" placeholder="sk-..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="OpenAI">?</button></div>
-                                    </div>
-                                    <div class="api-key-group">
-                                        <label for="anthropic-key-input"><a href="https://console.anthropic.com/dashboard" target="_blank">Anthropic Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
-                                        <p class="key-description" data-i18n-key="anthropicDescription">"The Challenger" - Access to the Claude 3.5 Sonnet family.</p>
-                                        <div class="password-input-wrapper"><input type="password" id="anthropic-key-input" placeholder="sk-ant-..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Anthropic">?</button></div>
-                                    </div>
-                                     <div class="api-key-group">
-                                        <label for="cohere-key-input"><a href="https://dashboard.cohere.com/api-keys" target="_blank">Cohere Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
-                                        <p class="key-description" data-i18n-key="cohereDescription">"The Enterprise Choice" - Access to Command R+ models.</p>
-                                        <div class="password-input-wrapper"><input type="password" id="cohere-key-input" placeholder="..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Cohere">?</button></div>
-                                    </div>
-                                    <div class="api-key-group">
-                                        <label for="mistral-key-input"><a href="https://console.mistral.ai/" target="_blank">Mistral Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
-                                        <p class="key-description" data-i18n-key="mistralDescription">"The European Powerhouse" - Access to Mistral Large.</p>
-                                        <div class="password-input-wrapper"><input type="password" id="mistral-key-input" placeholder="..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Mistral">?</button></div>
-                                    </div>
-                                     <div class="api-key-group">
-                                        <label for="alibaba-key-input"><a href="https://www.alibabacloud.com/product/model-studio" target="_blank">Alibaba Cloud Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
-                                        <p class="key-description" data-i18n-key="alibabaDescription">"The Tech Giant" - Access to Qwen models.</p>
-                                        <div class="password-input-wrapper"><input type="password" id="alibaba-key-input" placeholder="..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Alibaba">?</button></div>
-                                    </div>
-                                    <div class="api-key-group">
-                                        <label for="zhipu-key-input"><a href="https://open.bigmodel.cn/" target="_blank">Zhipu AI Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
-                                        <p class="key-description" data-i18n-key="zhipuDescription">"The Competitor" - Access to GLM-4 models.</p>
-                                        <div class="password-input-wrapper"><input type="password" id="zhipu-key-input" placeholder="..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Zhipu">?</button></div>
-                                    </div>
-                                    <div class="api-key-group">
-                                        <label for="moonshot-key-input"><a href="https://platform.moonshot.ai/console/api-keys" target="_blank">Moonshot AI Key <i class="fa-solid fa-arrow-up-right-from-square"></i></a></label>
-                                        <p class="key-description" data-i18n-key="moonshotDescription">"The Context King" - Access to Kimi models.</p>
-                                        <div class="password-input-wrapper"><input type="password" id="moonshot-key-input" placeholder="..."><button class="toggle-password"><i class="fa-solid fa-eye"></i></button><button class="help-button" data-provider="Moonshot">?</button></div>
-                                    </div>
-                                </fieldset>
-                            </div>
-                        </div>
-                    </section>
-                    <footer class="settings-footer">
-                        <button id="save-settings-button" data-i18n-key="saveButton">Save & Start</button>
-                    </footer>
-                </div>
-            </div>
-
-            <div id="model-selection-page" class="hidden">
-                <div class="model-selection-content">
-                    <header class="model-selection-header">
-                        <h2 data-i18n-key="modelSelectionTitle">Select a Model</h2>
-                        <button id="close-model-page-button" class="close-button">&times;</button>
-                    </header>
-                    <div class="model-selection-toolbar">
-                        <div class="search-wrapper">
-                            <i class="fa-solid fa-search"></i>
-                            <input type="search" id="model-search-input" placeholder="Search models...">
-                        </div>
-                        <div class="view-switcher">
-                            <button id="view-hierarchy-button" class="view-button active" title="View by Power"><i class="fa-solid fa-ranking-star"></i></button>
-                            <button id="view-provider-button" class="view-button" title="View by Provider"><i class="fa-solid fa-layer-group"></i></button>
-                        </div>
-                    </div>
-                    <section class="model-selection-body">
-                        </section>
-                </div>
-            </div>
-
-        </div>
-    </div>
-    
-    <div id="help-modal" class="modal hidden">
-        <div class="modal-content">
-            <header class="modal-header">
-                <h2 id="help-modal-title"></h2>
-                <button id="close-help-modal-button" class="close-button">&times;</button>
-            </header>
-            <section id="help-modal-body" class="modal-body"></section>
-        </div>
-    </div>
-
-    <div id="history-item-menu" class="hidden">
-        <button id="pin-chat-btn"><i class="fa-solid fa-thumbtack"></i> <span data-i18n-key="pinChat">Pin</span></button>
-        <button id="rename-chat-btn"><i class="fa-solid fa-pen-to-square"></i> <span data-i18n-key="renameChat">Rename</span></button>
-        <button id="delete-chat-btn"><i class="fa-solid fa-trash-can"></i> <span data-i18n-key="deleteChat">Delete</span></button>
-    </div>
-    
-    <input type="file" id="image-input-hidden" class="hidden-input" accept="image/*" multiple="false">
-    <input type="file" id="doc-input-hidden" class="hidden-input" accept=".txt" multiple="false">
-
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="app.js"></script>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script>
+      // Configure the PDF.js worker
+      if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+      }
+    </script>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>
