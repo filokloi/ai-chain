@@ -17,12 +17,12 @@ const App: React.FC = () => {
     const [isModelSelectionOpen, setIsModelSelectionOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isWelcomeVisible, setIsWelcomeVisible] = useState(true);
-    
+
     const [apiKeys, setApiKeys] = useState<ApiKeys>({});
     const [localLlmConfig, setLocalLlmConfig] = useState<LocalLlmConfig>({ serverUrl: '', apiKey: '' });
-    
+
     const { chats, currentChat, currentChatId, loadChat, startNewChat, updateCurrentChat, saveChats, clearHistory, pinChat, renameChat, deleteChat, deleteMessage } = useChatManager();
-    
+
     const [intelligence, setIntelligence] = useState<number>(100);
     const [currentModelIndex, setCurrentModelIndex] = useState(0);
     const [thinkingModel, setThinkingModel] = useState<ModelWithProvider | null>(null);
@@ -37,7 +37,7 @@ const App: React.FC = () => {
             let strategyKey: 'economy' | 'balanced' | 'power' = 'balanced';
             if (intelligence <= 33) strategyKey = 'economy';
             else if (intelligence >= 67) strategyKey = 'power';
-            
+
             let initialModelIndex = 0;
             if (strategyKey === 'power') {
                 initialModelIndex = 0;
@@ -62,7 +62,7 @@ const App: React.FC = () => {
         if (savedKeys) setApiKeys(JSON.parse(savedKeys));
         if (savedLlmConfig) setLocalLlmConfig(JSON.parse(savedLlmConfig));
         if (savedIntelligence) setIntelligence(parseInt(savedIntelligence, 10));
-        
+
         if (hasOnboarded) setIsWelcomeVisible(false);
     }, []);
 
@@ -72,7 +72,7 @@ const App: React.FC = () => {
 
     useEffect(() => {
         if (window.innerWidth >= 768) setIsSidebarOpen(true);
-    }, []); 
+    }, []);
 
     const handleStartChatting = () => {
         setIsWelcomeVisible(false);
@@ -112,7 +112,7 @@ const App: React.FC = () => {
                 updateCurrentChat(prev => ({ messages: [...prev.messages, systemMessage] }));
                 break;
             }
-            
+
             setThinkingModel(modelToTry);
 
             try {
@@ -127,7 +127,7 @@ const App: React.FC = () => {
                         model: `${modelToTry.provider}/${modelToTry.id}`
                     };
                     updateCurrentChat(prev => ({ messages: [...prev.messages, toolCallMessage] }));
-                    
+
                     const toolResponses = tool_calls.map(toolCall => ({
                         id: crypto.randomUUID(),
                         role: 'tool' as const,
@@ -140,7 +140,7 @@ const App: React.FC = () => {
                     const newMessages = [...messages, toolCallMessage, ...toolResponses];
                     updateCurrentChat(prev => ({ messages: newMessages }));
                     await runAiConversation(newMessages, files, controller); // Recursive call
-                    
+
                 } else {
                     const aiMessage: ChatMessage = {
                         id: crypto.randomUUID(),
@@ -159,7 +159,7 @@ const App: React.FC = () => {
 
                 console.error(`Error with ${modelToTry.id}:`, error);
                 let errorToDisplay = `**${modelToTry.provider}/${modelToTry.id}** failed.\n> *${error.message || 'Unknown error'}*`;
-                
+
                 if (modelStrategy.length > modelAttemptIndex + 1) {
                     modelAttemptIndex++;
                     errorToDisplay += `\n\nSwitching to **${modelStrategy[modelAttemptIndex].id}**.`;
@@ -169,7 +169,7 @@ const App: React.FC = () => {
 
                 const systemMessage: ChatMessage = { id: crypto.randomUUID(), role: 'assistant', content: errorToDisplay };
                 updateCurrentChat(prev => ({ messages: [...prev.messages, systemMessage] }));
-                
+
                 if (modelStrategy.length <= modelAttemptIndex + 1) break;
             }
         }
@@ -182,7 +182,7 @@ const App: React.FC = () => {
         if (!currentChat) return;
         const userMessage: ChatMessage = { id: crypto.randomUUID(), role: 'user', content: text, fileInfo: files };
         const updatedMessages = [...currentChat.messages, userMessage];
-        const newTitle = currentChat.messages.length === 0 
+        const newTitle = currentChat.messages.length === 0
             ? ((files?.[0] ? `[${files[0].name}] ` : '') + text).substring(0, 35) + (text.length > 35 ? '...' : '')
             : currentChat.title;
 
@@ -190,15 +190,22 @@ const App: React.FC = () => {
 
         const newAbortController = new AbortController();
         setAbortController(newAbortController);
-        
+
         await runAiConversation(updatedMessages, files, newAbortController);
     };
 
     const handleSwitchModel = (direction: 'next' | 'prev') => {
-        if (direction === 'next' && currentModelIndex < modelStrategy.length - 1) setCurrentModelIndex(prev => prev + 1);
-        else if (direction === 'prev' && currentModelIndex > 0) setCurrentModelIndex(prev => prev - 1);
+        if (modelStrategy.length === 0) return;
+
+        setCurrentModelIndex(prev => {
+            if (direction === 'next') {
+                return prev < modelStrategy.length - 1 ? prev + 1 : 0; // Loop to start
+            } else {
+                return prev > 0 ? prev - 1 : modelStrategy.length - 1; // Loop to end
+            }
+        });
     };
-    
+
     const handleStopGeneration = useCallback(() => {
         if (abortController) {
             abortController.abort();
@@ -226,7 +233,7 @@ const App: React.FC = () => {
 
     const handleFeedback = useCallback((messageId: string, feedback: 'like' | 'dislike') => {
         if (!currentChat) return;
-        const updatedMessages = currentChat.messages.map(msg => 
+        const updatedMessages = currentChat.messages.map(msg =>
             msg.id === messageId ? { ...msg, feedback: msg.feedback === feedback ? undefined : feedback } : msg
         );
         updateCurrentChat({ messages: updatedMessages });
@@ -249,27 +256,27 @@ const App: React.FC = () => {
                     }}
                 />
             )}
-            <HistorySidebar 
-                isOpen={isSidebarOpen} 
-                chats={chats} 
-                currentChatId={currentChatId} 
-                onSelectChat={(id) => { loadChat(id); if (window.innerWidth < 768) setIsSidebarOpen(false); }} 
-                onNewChat={() => { startNewChat(); if (window.innerWidth < 768) setIsSidebarOpen(false); }} 
-                onClearHistory={clearHistory} 
-                onPinChat={pinChat} 
-                onRenameChat={renameChat} 
-                onDeleteChat={deleteChat} 
+            <HistorySidebar
+                isOpen={isSidebarOpen}
+                chats={chats}
+                currentChatId={currentChatId}
+                onSelectChat={(id) => { loadChat(id); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
+                onNewChat={() => { startNewChat(); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
+                onClearHistory={clearHistory}
+                onPinChat={pinChat}
+                onRenameChat={renameChat}
+                onDeleteChat={deleteChat}
             />
             <div className="flex-grow w-full h-full flex flex-col relative min-w-0">
                 <AppHeader onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} onOpenSettings={() => setIsSettingsOpen(true)} onLogoClick={() => setIsWelcomeVisible(true)} />
-                <ChatWindow 
-                    chat={currentChat} 
-                    thinkingModel={thinkingModel} 
-                    onSendMessage={sendMessage} 
-                    currentModel={modelStrategy[currentModelIndex]} 
-                    onStopGeneration={handleStopGeneration} 
-                    onRegenerate={handleRegenerate} 
-                    onFeedback={handleFeedback} 
+                <ChatWindow
+                    chat={currentChat}
+                    thinkingModel={thinkingModel}
+                    onSendMessage={sendMessage}
+                    currentModel={modelStrategy[currentModelIndex]}
+                    onStopGeneration={handleStopGeneration}
+                    onRegenerate={handleRegenerate}
+                    onFeedback={handleFeedback}
                     onDeleteMessage={(msgId) => currentChatId && deleteMessage(currentChatId, msgId)}
                 />
                 <StatusBar intelligence={intelligence} onIntelligenceChange={setIntelligence} currentModel={modelStrategy[currentModelIndex]} fallbackModels={modelStrategy.slice(currentModelIndex + 1, currentModelIndex + 3)} onOpenModelSelection={() => setIsModelSelectionOpen(true)} onForceSwitch={handleSwitchModel} isThinking={!!thinkingModel} modelCount={modelStrategy.length} currentModelIdx={currentModelIndex} />

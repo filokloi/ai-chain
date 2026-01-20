@@ -45,9 +45,33 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                 </div>
 
                 <div className="flex items-center justify-center gap-2">
-                    <button onClick={() => onForceSwitch('prev')} disabled={isThinking || currentModelIdx === 0} className="control-button"><i className="fa-solid fa-backward"></i></button>
-                    <button onClick={onOpenModelSelection} className="footer-action-button">Select Model</button>
-                    <button onClick={() => onForceSwitch('next')} disabled={isThinking || currentModelIdx >= modelCount - 1} className="control-button"><i className="fa-solid fa-forward"></i></button>
+                    <button
+                        onClick={() => onForceSwitch('prev')}
+                        disabled={isThinking}
+                        className="p-2 rounded-full hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-[--text-secondary-color] hover:text-[--text-color]"
+                        title="Previous Model"
+                    >
+                        <i className="fa-solid fa-chevron-left"></i>
+                    </button>
+
+                    <button
+                        onClick={onOpenModelSelection}
+                        className="flex items-center gap-2 bg-[--surface-color] hover:bg-[#3a3a3a] border border-[--border-color] rounded-full px-4 py-1.5 transition-all w-full md:w-auto justify-center"
+                        title="Select Model"
+                    >
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        <span className="text-sm font-medium truncate max-w-[150px]">{currentModel?.name || 'Loading...'}</span>
+                        <i className="fa-solid fa-chevron-up text-xs ml-1"></i>
+                    </button>
+
+                    <button
+                        onClick={() => onForceSwitch('next')}
+                        disabled={isThinking}
+                        className="p-2 rounded-full hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-[--text-secondary-color] hover:text-[--text-color]"
+                        title="Next Model"
+                    >
+                        <i className="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
 
                 <div className="flex items-center justify-center md:justify-end gap-2 truncate">
@@ -69,8 +93,6 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                     background: white; border: 2px solid var(--bg-color);
                     border-radius: 3px; cursor: pointer;
                 }
-                .control-button {
-                    background: var(--surface-color); color: var(--text-color);
                     border: 1px solid var(--border-color);
                     width: 36px; height: 36px;
                     border-radius: 50%; display: flex; align-items: center; justify-content: center;
