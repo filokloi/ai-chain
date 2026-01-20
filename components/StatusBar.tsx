@@ -18,7 +18,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
     onOpenModelSelection, onForceSwitch, isThinking, modelCount, currentModelIdx
 }) => {
     return (
-        <footer className="p-4 border-t border-[--border-color] flex-shrink-0 mt-auto bg-[#1a1a1a]">
+        <footer className="p-4 border-t border-[--border-color] flex-shrink-0 sticky bottom-0 bg-[#1a1a1a] z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.3)]">
             <div className="mb-4">
                 <div className="flex justify-between text-xs text-[--text-secondary-color] px-1 mb-2">
                     <span>Economy</span>

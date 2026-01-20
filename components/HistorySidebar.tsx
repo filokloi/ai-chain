@@ -61,11 +61,11 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
 
         // 2. Process Unpinned Chats
         const unpinned = filteredChats.filter(c => !c.isPinned);
-        
+
         unpinned.forEach(chat => {
             const chatDate = new Date(chat.lastUpdated);
             const compareDate = new Date(chatDate.getFullYear(), chatDate.getMonth(), chatDate.getDate());
-            
+
             if (compareDate.getTime() === today.getTime()) groups.today.push(chat);
             else if (compareDate.getTime() === yesterday.getTime()) groups.yesterday.push(chat);
             else if (compareDate >= last7Days) groups.last7Days.push(chat);
@@ -76,7 +76,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
         ['today', 'yesterday', 'last7Days', 'older'].forEach(key => {
             groups[key].sort((a, b) => b.lastUpdated - a.lastUpdated);
         });
-        
+
         return groups;
     }, [filteredChats]);
 
@@ -101,9 +101,8 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
 
     const handleDelete = () => {
         if (!menuOpen) return;
-        if (confirm("Delete this chat? This cannot be undone.")) {
-            onDeleteChat(menuOpen.chatId);
-        }
+        // UX Improvement: Direct deletion without annoying native confirm
+        onDeleteChat(menuOpen.chatId);
         setMenuOpen(null);
     };
 
@@ -134,12 +133,12 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                 <i className="fa-solid fa-search absolute left-6 top-1/2 -translate-y-1/2 text-[--text-secondary-color]"></i>
                 <input type="text" placeholder="Search history..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-8 pr-4 py-2 bg-[--surface-color] border border-[--border-color] rounded-full focus:outline-none focus:border-[--primary-color]" />
             </div>
-            
+
             <div className="flex-grow overflow-y-auto py-2 custom-scrollbar relative">
                 {/* Pinned Section - Always at top */}
                 {groupedChats.pinned.length > 0 && (
                     <div className="mb-2">
-                         <h3 className="px-4 py-2 text-xs text-[--text-secondary-color] uppercase font-semibold flex items-center gap-2 sticky top-0 bg-[#161616] z-10">
+                        <h3 className="px-4 py-2 text-xs text-[--text-secondary-color] uppercase font-semibold flex items-center gap-2 sticky top-0 bg-[#161616] z-10">
                             <i className="fa-solid fa-thumbtack"></i> Pinned
                         </h3>
                         <ul>
@@ -167,7 +166,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
                     )
                 ))}
             </div>
-            
+
             <div className="p-3 border-t border-[--border-color] flex-shrink-0">
                 <button onClick={onClearHistory} title="Clear All History" className="w-full flex items-center justify-center gap-2 p-2 rounded-md hover:bg-red-900/30 border border-red-900/50 text-red-400 hover:text-red-200 transition-colors font-bold">
                     <i className="fa-solid fa-trash-can"></i> Clear History
@@ -176,9 +175,9 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({
 
             {/* Context Menu */}
             {menuOpen && (
-                <div 
-                    ref={menuRef} 
-                    style={{ top: `${Math.min(menuOpen.y, window.innerHeight - 140)}px`, left: `${Math.min(menuOpen.x, window.innerWidth - 150)}px` }} 
+                <div
+                    ref={menuRef}
+                    style={{ top: `${Math.min(menuOpen.y, window.innerHeight - 140)}px`, left: `${Math.min(menuOpen.x, window.innerWidth - 150)}px` }}
                     className="fixed bg-[--surface-color] border border-[--border-color] rounded-lg shadow-2xl z-[9999] flex flex-col text-sm w-36 overflow-hidden"
                 >
                     <button onClick={handlePin} className="px-4 py-3 text-left hover:bg-[--primary-color] flex items-center gap-3 transition-colors">
