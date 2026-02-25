@@ -268,13 +268,6 @@ const App: React.FC = () => {
                 onDeleteChat={deleteChat}
             />
             <div className="flex-grow w-full h-full flex flex-col relative min-w-0">
-                <button
-                    onClick={() => setIsSettingsOpen(true)}
-                    className="md:hidden fixed bottom-28 right-4 z-[100] bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg px-4 py-2 text-sm font-semibold"
-                    title="Open API Settings"
-                >
-                    API Settings
-                </button>
                 <AppHeader onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} onOpenSettings={() => setIsSettingsOpen(true)} onLogoClick={() => setIsWelcomeVisible(true)} />
                 <ChatWindow
                     chat={currentChat}
