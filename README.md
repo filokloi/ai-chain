@@ -1,18 +1,33 @@
 # AI Chain
 
 <div align="center">
-  <h3>Intelligent Model Switching Chatbot</h3>
-  <p>Seamless conversations with automated failover and multi-provider support.</p>
-  <a href="https://filokloi.github.io/ai-chain/"><strong>View Live Demo »</strong></a>
+  <h3>Chat, Compare & Run AI Models</h3>
+  <p>Multi-provider chat with automatic failover + a live catalog of 300+ models with free options and self-hosting guidance.</p>
+  <a href="https://filokloi.github.io/ai-chain/"><strong>Open the Site »</strong></a>
 </div>
 
 <br />
 
 ## Overview
 
-**AI Chain** is a robust chat application designed to solve the problem of API rate limits and service interruptions. By intelligently cascading through a configured list of AI models, it ensures your conversation continues smoothly even if a specific provider goes down or caps your usage.
+**AI Chain** is the interface plane of a two-part system:
 
-Built with performance and flexibility in mind, AI Chain supports major cloud providers and local LLMs, giving you control over "Intelligence vs. Cost" strategies.
+- **This site** (interface plane) — a chat application with intelligent model cascading, plus content pages: a sortable comparison of every model in the catalog, a guide to genuinely free AI options, a self-hosting guide for open-weight models, and solutions & ideas.
+- **[AIchain](https://github.com/filokloi/AIchain)** (data plane) — a GitHub Actions pipeline that re-scores ~336 models every 12 hours from multiple sources and publishes the ranked catalog this site renders. Its local sidecar, `aichaind`, applies the same catalog to live routing decisions.
+
+The chat solves API rate limits and service interruptions by cascading through a configured list of AI models, so your conversation continues even when a provider goes down or caps your usage.
+
+## Site sections
+
+| Route | What it does |
+|---|---|
+| `#/chat` | Multi-provider chat with automatic failover (the original AI Chain app). |
+| `#/models` | Sortable, filterable comparison of all catalog models: intelligence, speed, cost ($/M tokens), context, per-task scores, tiers. |
+| `#/free` | Every zero-cost path: free frontier models, OpenRouter `:free` variants, subscription bridges — with practical access tips. |
+| `#/selfhost` | Open-weight models grouped by hardware class (consumer / workstation / server) with runtimes and quantization info. |
+| `#/ideas` | The two-plane architecture explained, budget stack recipes, and roadmap. |
+
+Catalog data is fetched from the AIchain GitHub Pages deployment (same origin, no CORS) and cached locally for 12 hours to match the upstream refresh cadence.
 
 ## Key Features
 
