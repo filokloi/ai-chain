@@ -126,8 +126,6 @@ const App: React.FC = () => {
                         tool_calls: tool_calls,
                         model: `${modelToTry.provider}/${modelToTry.id}`
                     };
-                    updateCurrentChat(prev => ({ messages: [...prev.messages, toolCallMessage] }));
-
                     const toolResponses = tool_calls.map(toolCall => ({
                         id: crypto.randomUUID(),
                         role: 'tool' as const,

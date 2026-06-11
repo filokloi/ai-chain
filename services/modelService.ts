@@ -2,6 +2,12 @@ import { ApiKeys, ModelWithProvider, LocalLlmConfig, Model } from '../types';
 
 let openRouterModelsCache: Model[] | null = null;
 
+/**
+ * Providers that `apiService.getAiResponse` can call directly with their own key.
+ * Any other provider can only be reached through the OpenRouter aggregator.
+ */
+export const DIRECT_SUPPORTED_PROVIDERS = ['openai', 'google', 'zhipu', 'anthropic', 'groq', 'local'] as const;
+
 async function fetchOpenRouterModels(): Promise<Model[]> {
     if (openRouterModelsCache) {
         return openRouterModelsCache;
@@ -10,12 +16,17 @@ async function fetchOpenRouterModels(): Promise<Model[]> {
         const response = await fetch('https://openrouter.ai/api/v1/models');
         if (!response.ok) throw new Error('Failed to fetch OpenRouter models');
         const { data } = await response.json();
-        openRouterModelsCache = data;
-        return data;
+        openRouterModelsCache = Array.isArray(data) ? data : [];
+        return openRouterModelsCache;
     } catch (error) {
         console.error("Could not fetch OpenRouter models:", error);
         return []; // Return empty array on failure
     }
+}
+
+/** Allow tests / callers to reset the in-memory model cache. */
+export function __resetModelCache() {
+    openRouterModelsCache = null;
 }
 
 function getModelCapabilities(model: ModelWithProvider) {
@@ -24,6 +35,25 @@ function getModelCapabilities(model: ModelWithProvider) {
     const topTierModels = ['gpt-4o', 'claude-3.5-sonnet', 'command-r-plus', 'command-r+', 'glm-4', 'gemini-1.5', 'claude-3-opus'];
     const isTopTier = topTierModels.some(topModel => model.id.includes(topModel));
     return { isMultimodal, hasLargeContext, isTopTier };
+}
+
+/**
+ * A model is only usable if the app can actually reach it: either its provider has
+ * direct support AND the matching credential is present, or an OpenRouter key exists
+ * as a universal fallback. This prevents "phantom" models that are listed but always
+ * fail at request time.
+ */
+export function isModelCallable(model: ModelWithProvider, apiKeys: ApiKeys, localConfig: LocalLlmConfig): boolean {
+    if (model.provider === 'local') return Boolean(localConfig.serverUrl);
+    if (apiKeys.openrouter) return true; // OpenRouter can proxy anything.
+    switch (model.provider) {
+        case 'openai': return Boolean(apiKeys.openai);
+        case 'google': return Boolean(apiKeys.google);
+        case 'zhipu': return Boolean(apiKeys.zhipu);
+        case 'anthropic': return Boolean(apiKeys.anthropic);
+        case 'groq': return Boolean(apiKeys.groq);
+        default: return false; // cohere/mistral/xai/alibaba/moonshot need OpenRouter.
+    }
 }
 
 export async function fetchAndBuildModelStrategy(apiKeys: ApiKeys, localConfig: LocalLlmConfig): Promise<ModelWithProvider[]> {
@@ -54,38 +84,41 @@ export async function fetchAndBuildModelStrategy(apiKeys: ApiKeys, localConfig: 
         combinedModels.push({ id: 'anthropic/claude-3.5-sonnet', provider: 'anthropic', name: 'Claude 3.5 Sonnet', description: "Anthropic's latest model", architecture: { modality: 'multimodal' }, context_length: 200000 });
         combinedModels.push({ id: 'anthropic/claude-3-opus', provider: 'anthropic', name: 'Claude 3 Opus', description: "Anthropic's most powerful model", architecture: { modality: 'multimodal' }, context_length: 200000 });
     }
+    if (apiKeys.groq) {
+        combinedModels.push({ id: 'groq/llama-3.3-70b-versatile', provider: 'groq', name: 'Llama 3.3 70B (Groq)', description: "Fast Llama inference on Groq", architecture: { modality: 'text' }, context_length: 128000 });
+    }
     if (apiKeys.cohere) combinedModels.push({ id: 'cohere/command-r+', provider: 'cohere', name: 'Command R+', description: "Cohere's powerful model", architecture: { modality: 'multimodal' }, context_length: 128000 });
     if (apiKeys.mistral) combinedModels.push({ id: 'mistralai/mistral-large-latest', provider: 'mistral', name: 'Mistral Large', description: "Mistral's flagship model", architecture: { modality: 'text' }, context_length: 32000 });
     if (apiKeys.xai) combinedModels.push({ id: 'xai/grok-1', provider: 'xai', name: 'Grok-1', description: "X.ai's model", architecture: { modality: 'text' }, context_length: 8192 });
     if (apiKeys.alibaba) combinedModels.push({ id: 'alibaba/qwen-turbo', provider: 'alibaba', name: 'Qwen Turbo', description: "Alibaba's fast model", architecture: { modality: 'text' }, context_length: 8000 });
     if (apiKeys.zhipu) combinedModels.push({ id: 'zhipu/glm-4', provider: 'zhipu', name: 'GLM-4', description: 'Zhipu AI model', architecture: { modality: 'text' }, context_length: 128000 });
     if (apiKeys.moonshot) combinedModels.push({ id: 'moonshot/moonshot-v1-128k', provider: 'moonshot', name: 'Moonshot v1', description: 'Model with a very large context window', architecture: { modality: 'text' }, context_length: 128000 });
-    
+
     // 3. Fetch, curate, and add OpenRouter & Groq models
     if (apiKeys.openrouter || apiKeys.groq) {
         const allApiModels = await fetchOpenRouterModels();
-        
+
         const curatedModels: ModelWithProvider[] = allApiModels
             .map(model => {
                 const isFree = (model.pricing?.prompt === "0.000000" && model.pricing?.completion === "0.000000") || model.id.endsWith(':free');
                 let provider = model.id.split('/')[0] || 'openrouter';
                 if (provider === 'mistralai') provider = 'openrouter'; // Fix for mistralai provider name
-                 if (model.id.startsWith('groq/')) provider = 'groq';
-                
+                if (model.id.startsWith('groq/')) provider = 'groq';
+
                 return { ...model, provider, isFree };
             })
             .filter(model => {
                 const isChatModel = model.id.includes('chat') || model.id.includes('instruct') || model.architecture?.modality === 'multimodal' || model.provider === 'groq' || model.id.includes('claude') || model.id.includes('gpt');
                 const isExcluded = ['sdxl', 'dall-e', 'stable-diffusion', 'whisper', 'tts', 'pdx-cs-ai', 'image', 'edit'].some(term => model.id.includes(term));
-                
+
                 const hasKey = (model.provider === 'groq' && apiKeys.groq) || (model.provider !== 'groq' && apiKeys.openrouter);
-                
+
                 return hasKey && isChatModel && !isExcluded;
             });
 
         combinedModels.push(...curatedModels);
     }
-    
+
     // 4. Remove duplicates, prioritizing direct-keyed models over OpenRouter versions
     const uniqueModels = new Map<string, ModelWithProvider>();
     for (const model of combinedModels) {
@@ -94,8 +127,11 @@ export async function fetchAndBuildModelStrategy(apiKeys: ApiKeys, localConfig: 
             uniqueModels.set(model.id, model);
         }
     }
-    
-    return sortModelsForDisplay(Array.from(uniqueModels.values()));
+
+    // 5. Drop any model the app cannot actually reach with the current credentials.
+    const callableModels = Array.from(uniqueModels.values()).filter(m => isModelCallable(m, apiKeys, localConfig));
+
+    return sortModelsForDisplay(callableModels);
 }
 
 export function sortModelsForDisplay(models: ModelWithProvider[]): ModelWithProvider[] {
@@ -122,7 +158,7 @@ export function sortModelsForDisplay(models: ModelWithProvider[]): ModelWithProv
 
         const popularityA = a.popularity || 0;
         const popularityB = b.popularity || 0;
-        
+
         if (popularityA !== popularityB) return popularityB - popularityA;
 
         return a.id.localeCompare(b.id);

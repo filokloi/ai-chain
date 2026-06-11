@@ -68,11 +68,33 @@ Built with performance and flexibility in mind, AI Chain supports major cloud pr
 
 Upon first launch, you will be prompted to enter your API keys. You can configure:
 
-- **Gemini API Key**: For Google's models.
-- **OpenAI API Key**: For GPT models.
-- **Local LLM URL**: For connecting to a locally running model.
+- **Google (Gemini) API Key** — called directly.
+- **OpenAI API Key** — called directly.
+- **Anthropic API Key** — called directly via the Messages API.
+- **Groq API Key** — called directly (OpenAI-compatible endpoint).
+- **Zhipu API Key** — called directly (JWT-signed).
+- **OpenRouter API Key** — universal fallback that can reach every other provider (Cohere, Mistral, xAI, Alibaba, Moonshot, etc.).
+- **Local LLM URL** — any OpenAI-compatible server (LM Studio, Ollama, etc.).
 
-*Note: All keys are stored locally in your browser.*
+Only models the app can actually reach with your current keys are shown in the
+model picker — providers without direct support require an OpenRouter key, and
+unreachable models are filtered out rather than listed and failing at send time.
+
+*Note: All keys are stored locally in your browser and are never sent to our servers.*
+
+## Development
+
+```bash
+npm install      # install dependencies
+npm run dev      # start the dev server (http://localhost:3000)
+npm run typecheck # TypeScript type checking
+npm test         # run the Vitest unit suite
+npm run build    # production build to ./dist
+```
+
+CI (`.github/workflows/ci.yml`) runs type-checking, tests, and a production
+build on every push and pull request. Deployment to GitHub Pages is gated on
+the same checks passing.
 
 ## License
 

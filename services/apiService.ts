@@ -1,4 +1,3 @@
-
 import { ApiKeys, ChatMessage, ModelWithProvider, AttachedFile, LocalLlmConfig, ToolCall, ImageFile, DocumentFile } from '../types';
 import { getModelCapabilities } from './modelService';
 
@@ -11,6 +10,12 @@ const dataUrlToGeminiPart = (dataUrl: string) => {
     const match = dataUrl.match(/^data:(.+);base64,(.+)$/);
     if (!match) throw new Error("Invalid data URL format");
     return { inlineData: { mimeType: match[1], data: match[2] } };
+};
+
+const dataUrlToAnthropicPart = (dataUrl: string) => {
+    const match = dataUrl.match(/^data:(.+);base64,(.+)$/);
+    if (!match) throw new Error("Invalid data URL format");
+    return { type: 'image', source: { type: 'base64', media_type: match[1], data: match[2] } };
 };
 
 async function generateZhipuToken(apiKey: string): Promise<string> {
@@ -28,7 +33,7 @@ async function generateZhipuToken(apiKey: string): Promise<string> {
     return `${dataToSign}.${encodedSignature}`;
 }
 
-function formatMessagesForApi(
+export function formatMessagesForApi(
     allMessages: ChatMessage[],
     files: AttachedFile[] | null,
     modelInfo: ModelWithProvider
@@ -39,7 +44,7 @@ function formatMessagesForApi(
 
     const formattedMessages = allMessages.map((msg, index) => {
         const isLastMessage = index === allMessages.length - 1;
-        
+
         if (msg.role === 'user') {
             const contentParts: any[] = [];
             let promptText = msg.content || '';
@@ -51,7 +56,7 @@ function formatMessagesForApi(
                     promptText = `Based on the following document(s):\n${docContext}\n\nMy question: ${promptText}`;
                 }
                 contentParts.push({ type: 'text', text: promptText });
-                
+
                 if (isMultimodal && imageFiles.length > 0) {
                     imageFiles.forEach(file => {
                         contentParts.push({ type: 'image_url', image_url: { url: file.dataUrl } });
@@ -67,7 +72,7 @@ function formatMessagesForApi(
                 content: contentParts.length === 1 && contentParts[0].type === 'text' ? contentParts[0].text : contentParts
             };
         }
-        
+
         if (msg.role === 'assistant') {
             return {
                 role: 'assistant',
@@ -91,6 +96,35 @@ function formatMessagesForApi(
     return formattedMessages;
 }
 
+/**
+ * Anthropic's Messages API keeps the system prompt separate and uses content blocks.
+ * We convert the OpenAI-style intermediate format into that shape.
+ */
+function formatMessagesForAnthropic(openAiMessages: any[]): { system?: string; messages: any[] } {
+    const systemParts: string[] = [];
+    const messages: any[] = [];
+
+    for (const msg of openAiMessages) {
+        if (msg.role === 'system') {
+            if (typeof msg.content === 'string') systemParts.push(msg.content);
+            continue;
+        }
+        if (msg.role !== 'user' && msg.role !== 'assistant') continue; // skip tool roles
+
+        if (typeof msg.content === 'string') {
+            messages.push({ role: msg.role, content: msg.content });
+        } else if (Array.isArray(msg.content)) {
+            const blocks = msg.content.map((part: any) =>
+                part.type === 'text'
+                    ? { type: 'text', text: part.text }
+                    : dataUrlToAnthropicPart(part.image_url.url)
+            );
+            messages.push({ role: msg.role, content: blocks });
+        }
+    }
+
+    return { system: systemParts.join('\n\n') || undefined, messages };
+}
 
 export async function getAiResponse(
     modelInfo: ModelWithProvider,
@@ -100,16 +134,22 @@ export async function getAiResponse(
     files: AttachedFile[] | null,
     signal: AbortSignal
 ): Promise<ApiResponse> {
+    if (!messages || messages.length === 0) {
+        throw new Error("Cannot send an empty conversation.");
+    }
+
     const { id: fullModelId, provider } = modelInfo;
     const directApiKey = apiKeys[provider];
     const openRouterApiKey = apiKeys.openrouter;
-    
+
     let endpoint = '';
     let headers: Record<string, string> = {};
     let body: Record<string, any> = {};
+    let isAnthropic = false;
 
-    const useDirectCall = (['openai', 'google', 'zhipu'].includes(provider) && directApiKey) || (provider === 'local' && localConfig.serverUrl);
-    
+    const directProviders = ['openai', 'google', 'zhipu', 'anthropic', 'groq'];
+    const useDirectCall = (directProviders.includes(provider) && directApiKey) || (provider === 'local' && localConfig.serverUrl);
+
     if (useDirectCall) {
         const modelIdWithoutProvider = fullModelId.split('/').pop() || fullModelId;
         switch (provider) {
@@ -118,58 +158,92 @@ export async function getAiResponse(
                 headers = { 'Authorization': `Bearer ${localConfig.apiKey || 'no-key'}`, 'Content-Type': 'application/json' };
                 body = { model: modelIdWithoutProvider, messages: formatMessagesForApi(messages, files, modelInfo), max_tokens: 4096 };
                 break;
-            case 'google':
+            case 'google': {
                 endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelIdWithoutProvider}:generateContent?key=${directApiKey}`;
                 headers = { 'Content-Type': 'application/json' };
-                const geminiMessages = formatMessagesForApi(messages, files, modelInfo).map(msg => ({
-                    role: msg.role === 'assistant' ? 'model' : msg.role,
-                    parts: Array.isArray(msg.content) ? msg.content.map(part => part.type === 'text' ? { text: part.text } : dataUrlToGeminiPart(part.image_url.url)) : [{ text: msg.content || '' }]
-                }));
+                const geminiMessages = formatMessagesForApi(messages, files, modelInfo)
+                    .filter(msg => msg.role === 'user' || msg.role === 'assistant')
+                    .map(msg => ({
+                        role: msg.role === 'assistant' ? 'model' : 'user',
+                        parts: Array.isArray(msg.content) ? msg.content.map((part: any) => part.type === 'text' ? { text: part.text } : dataUrlToGeminiPart(part.image_url.url)) : [{ text: msg.content || '' }]
+                    }));
                 body = { contents: geminiMessages };
                 break;
+            }
             case 'openai':
                 endpoint = 'https://api.openai.com/v1/chat/completions';
                 headers = { 'Authorization': `Bearer ${directApiKey}`, 'Content-Type': 'application/json' };
                 body = { model: modelIdWithoutProvider, messages: formatMessagesForApi(messages, files, modelInfo), max_tokens: 4096 };
                 break;
-            case 'zhipu':
+            case 'groq':
+                endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+                headers = { 'Authorization': `Bearer ${directApiKey}`, 'Content-Type': 'application/json' };
+                body = { model: modelIdWithoutProvider, messages: formatMessagesForApi(messages, files, modelInfo), max_tokens: 4096 };
+                break;
+            case 'anthropic': {
+                isAnthropic = true;
+                endpoint = 'https://api.anthropic.com/v1/messages';
+                headers = {
+                    'x-api-key': directApiKey as string,
+                    'anthropic-version': '2023-06-01',
+                    'anthropic-dangerous-direct-browser-access': 'true',
+                    'Content-Type': 'application/json',
+                };
+                const { system, messages: anthropicMessages } = formatMessagesForAnthropic(formatMessagesForApi(messages, files, modelInfo));
+                body = { model: modelIdWithoutProvider, max_tokens: 4096, messages: anthropicMessages };
+                if (system) body.system = system;
+                break;
+            }
+            case 'zhipu': {
                 const token = await generateZhipuToken(directApiKey as string);
                 endpoint = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
                 headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
                 body = { model: modelIdWithoutProvider, messages: formatMessagesForApi(messages, null, modelInfo) };
                 break;
+            }
         }
     } else if (openRouterApiKey) {
         endpoint = 'https://openrouter.ai/api/v1/chat/completions';
         headers = { 'Authorization': `Bearer ${openRouterApiKey}`, 'Content-Type': 'application/json' };
         body = { model: fullModelId, messages: formatMessagesForApi(messages, files, modelInfo) };
     } else {
-        throw new Error(`No API key for '${provider}' and no OpenRouter fallback key.`);
+        throw new Error(`No API key configured for '${provider}' and no OpenRouter fallback key set. Add a key in Settings.`);
     }
 
-    const response = await fetch(endpoint, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(body),
-        signal,
-    });
+    let response: Response;
+    try {
+        response = await fetch(endpoint, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body),
+            signal,
+        });
+    } catch (err: any) {
+        if (err?.name === 'AbortError') throw err;
+        throw new Error(`Network error contacting ${provider}: ${err?.message || 'request failed'}`);
+    }
 
     if (!response.ok) {
         const errorText = await response.text();
+        let message: string;
         try {
             const errorData = JSON.parse(errorText);
-            throw new Error(errorData.message || errorData.error?.message || JSON.stringify(errorData));
-        } catch(e) {
-            throw new Error(errorText || "An unknown network error occurred.");
+            message = errorData.message || errorData.error?.message || JSON.stringify(errorData);
+        } catch {
+            message = errorText || "An unknown network error occurred.";
         }
+        throw new Error(`${provider} request failed (HTTP ${response.status}): ${message}`);
     }
 
     const data = await response.json();
 
-    let aiMessageContent: string | null = "No response.";
+    let aiMessageContent: string | null = null;
     let tool_calls: ToolCall[] | undefined = undefined;
 
-    if (data.choices && data.choices[0] && data.choices[0].message) {
+    if (isAnthropic) {
+        const textBlock = Array.isArray(data.content) ? data.content.find((b: any) => b.type === 'text') : null;
+        aiMessageContent = textBlock?.text ?? null;
+    } else if (data.choices && data.choices[0] && data.choices[0].message) {
         const message = data.choices[0].message;
         aiMessageContent = message.content;
         tool_calls = message.tool_calls;
@@ -183,6 +257,6 @@ export async function getAiResponse(
         console.warn("Invalid response structure from provider:", data);
         throw new Error("Empty or invalid response from provider.");
     }
-    
+
     return { text: aiMessageContent || '', tool_calls };
 }
