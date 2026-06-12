@@ -145,3 +145,13 @@ describe('loadCatalog', () => {
     await expect(loadCatalog(true)).rejects.toThrow(/empty/i);
   });
 });
+
+describe('buildIntelligenceMap', () => {
+  it('maps lowercase ids to intelligence', async () => {
+    const { buildIntelligenceMap } = await import('../catalogService');
+    const map = buildIntelligenceMap({ generatedAt: null, models: [
+      m({ id: 'Meta/Llama-3', intelligence: 88 }),
+    ] });
+    expect(map.get('meta/llama-3')).toBe(88);
+  });
+});

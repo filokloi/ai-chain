@@ -205,7 +205,9 @@ export async function getAiResponse(
     } else if (openRouterApiKey) {
         endpoint = 'https://openrouter.ai/api/v1/chat/completions';
         headers = { 'Authorization': `Bearer ${openRouterApiKey}`, 'Content-Type': 'application/json' };
-        body = { model: fullModelId, messages: formatMessagesForApi(messages, files, modelInfo) };
+        // Cap max_tokens: without it OpenRouter reserves a large default, which
+        // fails with HTTP 402 on low-credit accounts even for cheap models.
+        body = { model: fullModelId, messages: formatMessagesForApi(messages, files, modelInfo), max_tokens: 4096 };
     } else {
         throw new Error(`No API key configured for '${provider}' and no OpenRouter fallback key set. Add a key in Settings.`);
     }

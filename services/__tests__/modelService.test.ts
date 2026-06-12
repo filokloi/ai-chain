@@ -96,3 +96,29 @@ describe('fetchAndBuildModelStrategy', () => {
     expect(strat.find(x => x.id === 'stability/sdxl')).toBeUndefined(); // excluded image model
   });
 });
+
+describe('pickEconomyModelIndex', () => {
+  const strat = [
+    m({ id: 'openai/gpt-4o', isFree: false }),
+    m({ id: 'weak/model:free', isFree: true }),
+    m({ id: 'strong/model:free', isFree: true }),
+    m({ id: 'mid/model', isFree: true }),
+  ];
+
+  it('picks the smartest free model using catalog intelligence', async () => {
+    const { pickEconomyModelIndex } = await import('../modelService');
+    const intel = new Map([['weak/model', 40], ['strong/model', 95], ['mid/model', 70]]);
+    expect(pickEconomyModelIndex(strat, intel)).toBe(2);
+  });
+
+  it('falls back to the first free model without catalog data', async () => {
+    const { pickEconomyModelIndex } = await import('../modelService');
+    expect(pickEconomyModelIndex(strat)).toBe(1);
+    expect(pickEconomyModelIndex(strat, new Map())).toBe(1);
+  });
+
+  it('returns 0 when nothing is free', async () => {
+    const { pickEconomyModelIndex } = await import('../modelService');
+    expect(pickEconomyModelIndex([m({ isFree: false }), m({ isFree: false })])).toBe(0);
+  });
+});

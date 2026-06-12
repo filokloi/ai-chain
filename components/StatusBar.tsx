@@ -41,7 +41,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-2 text-xs text-[--text-secondary-color] text-center">
                 <div className="flex items-center justify-center md:justify-start gap-2 truncate">
                     <span>Current:</span>
-                    <strong className="text-[--text-color] truncate">{currentModel ? `${currentModel.provider}/${currentModel.id}` : 'Not Configured'}</strong>
+                    <strong className="text-[--text-color] truncate">{currentModel ? currentModel.id : 'Not Configured'}</strong>
                 </div>
 
                 <div className="flex items-center justify-center gap-2">

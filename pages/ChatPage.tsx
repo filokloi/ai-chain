@@ -7,7 +7,8 @@ import { ChatWindow } from '../components/ChatWindow';
 import { StatusBar } from '../components/StatusBar';
 import { ModelSelectionModal } from '../components/ModelSelectionModal';
 import { useChatManager } from '../hooks/useChatManager';
-import { fetchAndBuildModelStrategy } from '../services/modelService';
+import { fetchAndBuildModelStrategy, pickEconomyModelIndex } from '../services/modelService';
+import { loadCatalog, buildIntelligenceMap } from '../services/catalogService';
 import { getAiResponse } from '../services/apiService';
 import { ApiKeys, Chat as ChatType, AttachedFile, LocalLlmConfig, ModelWithProvider, ChatMessage } from '../types';
 import { AppHeader } from '../components/AppHeader';
@@ -42,8 +43,15 @@ export const ChatPage: React.FC = () => {
             if (strategyKey === 'power') {
                 initialModelIndex = 0;
             } else if (strategyKey === 'economy') {
-                const firstFreeIndex = strategy.findIndex(m => m.isFree);
-                initialModelIndex = firstFreeIndex !== -1 ? firstFreeIndex : 0;
+                // Rank free models by AIchain catalog intelligence so Economy
+                // starts at the SMARTEST free option, not just the first one.
+                let intelligence: Map<string, number> | undefined;
+                try {
+                    intelligence = buildIntelligenceMap(await loadCatalog());
+                } catch {
+                    // Offline / catalog unavailable: fall back to first-free.
+                }
+                initialModelIndex = pickEconomyModelIndex(strategy, intelligence);
             } else {
                 initialModelIndex = Math.floor(strategy.length / 4);
             }
@@ -124,7 +132,7 @@ export const ChatPage: React.FC = () => {
                         role: 'assistant',
                         content: null,
                         tool_calls: tool_calls,
-                        model: `${modelToTry.provider}/${modelToTry.id}`
+                        model: modelToTry.id
                     };
                     const toolResponses = tool_calls.map(toolCall => ({
                         id: crypto.randomUUID(),
@@ -144,7 +152,7 @@ export const ChatPage: React.FC = () => {
                         id: crypto.randomUUID(),
                         role: 'assistant',
                         content: aiResponseText,
-                        model: `${modelToTry.provider}/${modelToTry.id}`
+                        model: modelToTry.id
                     };
                     updateCurrentChat(prev => ({ messages: [...prev.messages, aiMessage] }));
                 }
@@ -156,7 +164,7 @@ export const ChatPage: React.FC = () => {
                 if (error.name === 'AbortError') return;
 
                 console.error(`Error with ${modelToTry.id}:`, error);
-                let errorToDisplay = `**${modelToTry.provider}/${modelToTry.id}** failed.\n> *${error.message || 'Unknown error'}*`;
+                let errorToDisplay = `**${modelToTry.id}** failed.\n> *${error.message || 'Unknown error'}*`;
 
                 if (modelStrategy.length > modelAttemptIndex + 1) {
                     modelAttemptIndex++;

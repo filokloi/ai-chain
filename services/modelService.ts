@@ -134,6 +134,29 @@ export async function fetchAndBuildModelStrategy(apiKeys: ApiKeys, localConfig: 
     return sortModelsForDisplay(callableModels);
 }
 
+/**
+ * Economy strategy: choose the FREE model with the highest intelligence score
+ * from the AIchain catalog. Falls back to the first free model when no catalog
+ * data is available, and to index 0 when nothing is free.
+ */
+export function pickEconomyModelIndex(
+    strategy: ModelWithProvider[],
+    intelligenceById?: Map<string, number>,
+): number {
+    let bestIdx = -1;
+    let bestScore = -1;
+    strategy.forEach((model, idx) => {
+        if (!model.isFree) return;
+        const baseId = model.id.toLowerCase().replace(/:free$/, '');
+        const score = intelligenceById?.get(baseId) ?? intelligenceById?.get(model.id.toLowerCase()) ?? 0;
+        if (bestIdx === -1 || score > bestScore) {
+            bestScore = score;
+            bestIdx = idx;
+        }
+    });
+    return bestIdx !== -1 ? bestIdx : 0;
+}
+
 export function sortModelsForDisplay(models: ModelWithProvider[]): ModelWithProvider[] {
     const DIRECT_KEY_MODEL_PRIORITY: Record<string, number> = {
         'openai/gpt-4o': 1,

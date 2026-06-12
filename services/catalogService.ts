@@ -199,3 +199,15 @@ export function formatContext(tokens: number): string {
     if (tokens >= 1_000) return `${Math.round(tokens / 1_000)}K`;
     return String(tokens);
 }
+
+/**
+ * Map of catalog model id (lowercase) -> intelligence score, for ranking the
+ * chat strategy. OpenRouter ':free' variants match their base catalog entry.
+ */
+export function buildIntelligenceMap(snapshot: CatalogSnapshot): Map<string, number> {
+    const map = new Map<string, number>();
+    for (const m of snapshot.models) {
+        map.set(m.id.toLowerCase(), m.intelligence);
+    }
+    return map;
+}
