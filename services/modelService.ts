@@ -157,6 +157,29 @@ export function pickEconomyModelIndex(
     return bestIdx !== -1 ? bestIdx : 0;
 }
 
+/**
+ * Economy ordering: ALL free models first (ranked by AIchain catalog
+ * intelligence, descending), then paid models in their original order.
+ * This makes the entire failover chain walk free options before spending
+ * a single token of credit.
+ */
+export function orderStrategyForEconomy(
+    strategy: ModelWithProvider[],
+    intelligenceById?: Map<string, number>,
+): ModelWithProvider[] {
+    const score = (m: ModelWithProvider) => {
+        const baseId = m.id.toLowerCase().replace(/:free$/, '');
+        return intelligenceById?.get(baseId) ?? intelligenceById?.get(m.id.toLowerCase()) ?? 0;
+    };
+    const free = strategy.filter(m => m.isFree);
+    const paid = strategy.filter(m => !m.isFree);
+    const freeRanked = free
+        .map((m, i) => ({ m, i, s: score(m) }))
+        .sort((a, b) => (b.s - a.s) || (a.i - b.i)) // stable: original order on ties
+        .map(x => x.m);
+    return [...freeRanked, ...paid];
+}
+
 export function sortModelsForDisplay(models: ModelWithProvider[]): ModelWithProvider[] {
     const DIRECT_KEY_MODEL_PRIORITY: Record<string, number> = {
         'openai/gpt-4o': 1,

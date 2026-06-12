@@ -122,3 +122,39 @@ describe('pickEconomyModelIndex', () => {
     expect(pickEconomyModelIndex([m({ isFree: false }), m({ isFree: false })])).toBe(0);
   });
 });
+
+describe('orderStrategyForEconomy', () => {
+  const strat = [
+    m({ id: 'openai/gpt-4o', isFree: false }),
+    m({ id: 'weak/model:free', isFree: true }),
+    m({ id: 'anthropic/claude-3-opus', isFree: false }),
+    m({ id: 'strong/model:free', isFree: true }),
+  ];
+
+  it('puts ALL free models before ALL paid models', async () => {
+    const { orderStrategyForEconomy } = await import('../modelService');
+    const ordered = orderStrategyForEconomy(strat);
+    expect(ordered.map(x => x.isFree)).toEqual([true, true, false, false]);
+  });
+
+  it('ranks free models by catalog intelligence, descending', async () => {
+    const { orderStrategyForEconomy } = await import('../modelService');
+    const intel = new Map([['weak/model', 40], ['strong/model', 95]]);
+    const ordered = orderStrategyForEconomy(strat, intel);
+    expect(ordered[0].id).toBe('strong/model:free');
+    expect(ordered[1].id).toBe('weak/model:free');
+  });
+
+  it('keeps paid models in their original relative order', async () => {
+    const { orderStrategyForEconomy } = await import('../modelService');
+    const ordered = orderStrategyForEconomy(strat);
+    const paid = ordered.filter(x => !x.isFree).map(x => x.id);
+    expect(paid).toEqual(['openai/gpt-4o', 'anthropic/claude-3-opus']);
+  });
+
+  it('is stable on intelligence ties (original order preserved)', async () => {
+    const { orderStrategyForEconomy } = await import('../modelService');
+    const ordered = orderStrategyForEconomy(strat, new Map());
+    expect(ordered[0].id).toBe('weak/model:free');
+  });
+});

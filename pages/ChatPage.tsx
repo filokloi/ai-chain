@@ -7,7 +7,7 @@ import { ChatWindow } from '../components/ChatWindow';
 import { StatusBar } from '../components/StatusBar';
 import { ModelSelectionModal } from '../components/ModelSelectionModal';
 import { useChatManager } from '../hooks/useChatManager';
-import { fetchAndBuildModelStrategy, pickEconomyModelIndex } from '../services/modelService';
+import { fetchAndBuildModelStrategy, orderStrategyForEconomy } from '../services/modelService';
 import { loadCatalog, buildIntelligenceMap } from '../services/catalogService';
 import { getAiResponse } from '../services/apiService';
 import { ApiKeys, Chat as ChatType, AttachedFile, LocalLlmConfig, ModelWithProvider, ChatMessage } from '../types';
@@ -31,8 +31,7 @@ export const ChatPage: React.FC = () => {
     const [modelStrategy, setModelStrategy] = useState<ModelWithProvider[]>([]);
 
     const updateStrategy = useCallback(async () => {
-        const strategy = await fetchAndBuildModelStrategy(apiKeys, localLlmConfig);
-        setModelStrategy(strategy);
+        let strategy = await fetchAndBuildModelStrategy(apiKeys, localLlmConfig);
 
         if (strategy.length > 0) {
             let strategyKey: 'economy' | 'balanced' | 'power' = 'balanced';
@@ -43,20 +42,25 @@ export const ChatPage: React.FC = () => {
             if (strategyKey === 'power') {
                 initialModelIndex = 0;
             } else if (strategyKey === 'economy') {
-                // Rank free models by AIchain catalog intelligence so Economy
-                // starts at the SMARTEST free option, not just the first one.
-                let intelligence: Map<string, number> | undefined;
+                // Economy: reorder the ENTIRE chain so every free model
+                // (ranked by AIchain catalog intelligence) is tried before
+                // any paid one. The failover walk then never spends credit
+                // while a free option is still standing.
+                let catalogIntelligence: Map<string, number> | undefined;
                 try {
-                    intelligence = buildIntelligenceMap(await loadCatalog());
+                    catalogIntelligence = buildIntelligenceMap(await loadCatalog());
                 } catch {
-                    // Offline / catalog unavailable: fall back to first-free.
+                    // Offline / catalog unavailable: keep original free order.
                 }
-                initialModelIndex = pickEconomyModelIndex(strategy, intelligence);
+                strategy = orderStrategyForEconomy(strategy, catalogIntelligence);
+                initialModelIndex = 0;
             } else {
                 initialModelIndex = Math.floor(strategy.length / 4);
             }
+            setModelStrategy(strategy);
             setCurrentModelIndex(initialModelIndex);
         } else {
+            setModelStrategy(strategy);
             setCurrentModelIndex(0);
         }
     }, [apiKeys, localLlmConfig, intelligence]);
