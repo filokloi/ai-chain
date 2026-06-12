@@ -33,11 +33,22 @@ export const SiteNav: React.FC<SiteNavProps> = ({ route, onNavigate }) => (
                 <i className={`fa-solid ${tab.icon} mr-1.5`} />{tab.label}
             </button>
         ))}
+        <button
+            onClick={() => {
+                sessionStorage.setItem('ai-chain-open-settings', '1');
+                window.dispatchEvent(new CustomEvent('ai-chain:open-settings'));
+                onNavigate('chat');
+            }}
+            className="ml-auto px-3 py-1.5 rounded-lg text-sm whitespace-nowrap bg-[#4a90e2]/15 text-[#7eb3ec] hover:bg-[#4a90e2] hover:text-white transition-colors border border-[#4a90e2]/40"
+            title="Enter API keys or sign in with OpenRouter"
+        >
+            <i className="fa-solid fa-key mr-1.5" />API Keys
+        </button>
         <a
             href={DASHBOARD_URL}
             target="_blank"
             rel="noreferrer"
-            className="ml-auto px-3 py-1.5 rounded-lg text-sm whitespace-nowrap text-[#a0a0a0] hover:text-white hover:bg-[#2c2c2c]"
+            className="px-3 py-1.5 rounded-lg text-sm whitespace-nowrap text-[#a0a0a0] hover:text-white hover:bg-[#2c2c2c]"
             title="AIchain live dashboard (data plane)"
         >
             <i className="fa-solid fa-satellite-dish mr-1.5" />Dashboard

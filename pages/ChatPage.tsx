@@ -86,6 +86,19 @@ export const ChatPage: React.FC = () => {
         if (window.innerWidth >= 768) setIsSidebarOpen(true);
     }, []);
 
+    // The "API Keys" button in the site navigation opens the settings panel,
+    // even when the user was on another page when clicking it.
+    useEffect(() => {
+        if (sessionStorage.getItem('ai-chain-open-settings')) {
+            sessionStorage.removeItem('ai-chain-open-settings');
+            setIsWelcomeVisible(false);
+            setIsSettingsOpen(true);
+        }
+        const open = () => { setIsWelcomeVisible(false); setIsSettingsOpen(true); };
+        window.addEventListener('ai-chain:open-settings', open);
+        return () => window.removeEventListener('ai-chain:open-settings', open);
+    }, []);
+
     const handleStartChatting = () => {
         setIsWelcomeVisible(false);
         localStorage.setItem('hasOnboarded', 'true');
@@ -289,7 +302,7 @@ export const ChatPage: React.FC = () => {
                     onFeedback={handleFeedback}
                     onDeleteMessage={(msgId) => currentChatId && deleteMessage(currentChatId, msgId)}
                 />
-                <StatusBar intelligence={intelligence} onIntelligenceChange={setIntelligence} currentModel={modelStrategy[currentModelIndex]} fallbackModels={modelStrategy.slice(currentModelIndex + 1, currentModelIndex + 3)} onOpenModelSelection={() => setIsModelSelectionOpen(true)} onForceSwitch={handleSwitchModel} isThinking={!!thinkingModel} modelCount={modelStrategy.length} currentModelIdx={currentModelIndex} />
+                <StatusBar intelligence={intelligence} onIntelligenceChange={(v) => { setIntelligence(v); localStorage.setItem('intelligenceSlider', String(v)); }} currentModel={modelStrategy[currentModelIndex]} fallbackModels={modelStrategy.slice(currentModelIndex + 1, currentModelIndex + 3)} onOpenModelSelection={() => setIsModelSelectionOpen(true)} onForceSwitch={handleSwitchModel} isThinking={!!thinkingModel} modelCount={modelStrategy.length} currentModelIdx={currentModelIndex} />
             </div>
         </div>
     );

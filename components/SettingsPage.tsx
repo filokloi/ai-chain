@@ -1,6 +1,7 @@
 
 import React, { useState, ChangeEvent } from 'react';
 import { ApiKeys, LocalLlmConfig } from '../types';
+import { startOpenRouterLogin } from '../services/oauthService';
 
 interface SettingsPageProps {
     initialKeys: ApiKeys;
@@ -74,6 +75,21 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ initialKeys, initial
                     </div>
                     <button onClick={onClose} className="text-2xl text-[--text-secondary-color] hover:text-[--text-color]">&times;</button>
                 </header>
+
+                <div className="px-6 pt-5">
+                    <div className="border border-[--primary-color]/40 bg-[--primary-color]/10 rounded-lg p-4 flex flex-wrap items-center gap-3">
+                        <div className="flex-1 min-w-[220px]">
+                            <p className="font-semibold text-[--text-color]"><i className="fa-solid fa-bolt mr-2 text-[--primary-color]" />Fastest start: sign in with OpenRouter</p>
+                            <p className="text-sm text-[--text-secondary-color]">One click, no copy-pasting — creates a key that unlocks 300+ models including every free one.</p>
+                        </div>
+                        <button
+                            onClick={() => { void startOpenRouterLogin(); }}
+                            className="px-5 py-2.5 bg-[--primary-color] hover:bg-blue-400 text-white font-bold rounded-lg transition-colors whitespace-nowrap"
+                        >
+                            <i className="fa-solid fa-right-to-bracket mr-2" />Sign in with OpenRouter
+                        </button>
+                    </div>
+                </div>
 
                 <div className="p-6 border-b border-[--border-color]">
                     <div className="flex space-x-4">
