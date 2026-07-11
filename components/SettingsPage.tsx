@@ -139,7 +139,21 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ initialKeys, initial
                     )}
                 </main>
 
-                <footer className="p-6 border-t border-[--border-color] flex justify-end flex-shrink-0">
+                <p className="px-6 pb-3 text-xs text-[--text-secondary] flex-shrink-0">
+                    All data — chat history, API keys and settings — is stored only in this browser
+                    (localStorage). Nothing is ever sent to or stored on any server.
+                </p>
+                <footer className="p-6 border-t border-[--border-color] flex justify-between flex-shrink-0">
+                    <button
+                        onClick={() => {
+                            if (window.confirm('Delete ALL local data (chats, API keys, settings) from this browser? This cannot be undone.')) {
+                                localStorage.clear();
+                                window.location.reload();
+                            }
+                        }}
+                        className="border border-red-500 text-red-500 py-2 px-4 font-semibold rounded-md hover:bg-red-500 hover:text-white transition-colors">
+                        Clear all data
+                    </button>
                     <button onClick={() => onSave(keys, llmConfig)} className="bg-[--primary-color] text-white py-2 px-6 font-semibold rounded-md hover:bg-[#3a80d2] transition-colors">
                         Save & Start
                     </button>
