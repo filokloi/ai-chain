@@ -46,6 +46,36 @@ const CodeBlock: React.FC<any> = ({ node, inline, className, children, ...props 
     );
 };
 
+/** Routing transparency: which model actually answered, at what cost —
+ *  the AIchain differentiator surfaced in the UI. Sidecar answers carry the
+ *  full `_aichaind` block (failover chain, effective cost); direct calls
+ *  show model + latency. */
+const RouteBadge: React.FC<{ message: ChatMessage }> = ({ message }) => {
+    if (message.role !== 'assistant' || (!message.model && !message.aichain)) return null;
+    const a = message.aichain;
+    const model = a?.routed_model || message.model || '';
+    const parts: string[] = [];
+    if (model) parts.push(model);
+    if (a?.estimated_cost_usd !== undefined) {
+        const c = a.estimated_cost_usd;
+        parts.push(c <= 0 ? 'free' : `$${c < 0.01 ? c.toFixed(6) : c.toFixed(4)}`);
+    }
+    if (message.latencyMs) parts.push(`${(message.latencyMs / 1000).toFixed(1)}s`);
+    if (!parts.length) return null;
+    return (
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-[--text-secondary-color] opacity-70">
+            <i className="fa-solid fa-route" aria-hidden="true"></i>
+            <span className="truncate">{parts.join(' · ')}</span>
+            {a?.failover_used && a?.fallback_chain?.length ? (
+                <span title={`Failover: ${a.fallback_chain.join(' → ')} → ${model}`}
+                      className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                    failover ×{a.fallback_chain.length}
+                </span>
+            ) : null}
+        </div>
+    );
+};
+
 const MessageActionsToolbar: React.FC<{
     message: ChatMessage;
     onRegenerate: (id: string) => void;
@@ -125,14 +155,15 @@ const Message: React.FC<{
                     {content && <div className="prose prose-invert max-w-none prose-p:my-2 prose-pre:my-2 ai-message">
                         <Markdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>{content}</Markdown>
                     </div>}
+                    {message.streaming && <span className="inline-block w-2 h-4 bg-[--primary-color] animate-pulse align-text-bottom" aria-label="generating"></span>}
                     {tool_calls && tool_calls.map((tc, index) => <ToolCallMessage key={index} toolCall={tc} />)}
                 </div>
 
                 <div className={`pl-2 mb-4 ${role === 'user' ? 'flex justify-end' : ''}`}>
                     {role === 'assistant' ? (
                         <>
-                            {model && <p className="text-xs text-gray-500/80 italic mb-2 mr-2">answered by {model.split('/').pop()}</p>}
-                            <MessageActionsToolbar message={message} onRegenerate={onRegenerate} onFeedback={onFeedback} onDelete={onDelete} />
+                            <RouteBadge message={message} />
+                            {!message.streaming && <MessageActionsToolbar message={message} onRegenerate={onRegenerate} onFeedback={onFeedback} onDelete={onDelete} />}
                         </>
                     ) : (
                         <button

@@ -4,6 +4,7 @@ import { getModelCapabilities } from './modelService';
 interface ApiResponse {
     text: string;
     tool_calls?: ToolCall[];
+    aichain?: import('../types').AichainRouteMeta;
 }
 
 const dataUrlToGeminiPart = (dataUrl: string) => {
@@ -260,5 +261,147 @@ export async function getAiResponse(
         throw new Error("Empty or invalid response from provider.");
     }
 
-    return { text: aiMessageContent || '', tool_calls };
+    return { text: aiMessageContent || '', tool_calls, aichain: data._aichaind };
+}
+
+/**
+ * Streaming variant (SSE) for OpenAI-compatible providers: OpenRouter,
+ * OpenAI, Groq and any local OpenAI-compatible server — including the
+ * aichaind sidecar, whose final frame carries `_aichaind` routing metadata
+ * (which model actually answered, effective cost, failover chain).
+ *
+ * Google / Anthropic / Zhipu fall back to the non-streaming call and emit
+ * the whole text through onDelta once, so callers use one code path.
+ */
+export async function streamAiResponse(
+    modelInfo: ModelWithProvider,
+    apiKeys: ApiKeys,
+    localConfig: LocalLlmConfig,
+    messages: ChatMessage[],
+    files: AttachedFile[] | null,
+    signal: AbortSignal,
+    onDelta: (textSoFar: string) => void
+): Promise<ApiResponse> {
+    const { id: fullModelId, provider } = modelInfo;
+    const directApiKey = apiKeys[provider];
+    const openRouterApiKey = apiKeys.openrouter;
+
+    const sseCapable = (provider === 'local' && localConfig.serverUrl)
+        || (provider === 'openai' && directApiKey)
+        || (provider === 'groq' && directApiKey)
+        || (!['openai', 'google', 'zhipu', 'anthropic', 'groq', 'local'].includes(provider) && openRouterApiKey)
+        || (['google', 'zhipu', 'anthropic'].includes(provider) && !directApiKey && openRouterApiKey);
+
+    if (!sseCapable) {
+        const full = await getAiResponse(modelInfo, apiKeys, localConfig, messages, files, signal);
+        if (full.text) onDelta(full.text);
+        return full;
+    }
+
+    let endpoint: string;
+    let headers: Record<string, string>;
+    const formatted = formatMessagesForApi(messages, files, modelInfo);
+    const modelIdWithoutProvider = fullModelId.split('/').pop() || fullModelId;
+    let body: Record<string, any>;
+
+    if (provider === 'local' && localConfig.serverUrl) {
+        endpoint = new URL('/v1/chat/completions', localConfig.serverUrl).toString();
+        headers = { 'Authorization': `Bearer ${localConfig.apiKey || 'no-key'}`, 'Content-Type': 'application/json' };
+        body = { model: modelIdWithoutProvider, messages: formatted, max_tokens: 4096, stream: true };
+    } else if (provider === 'openai' && directApiKey) {
+        endpoint = 'https://api.openai.com/v1/chat/completions';
+        headers = { 'Authorization': `Bearer ${directApiKey}`, 'Content-Type': 'application/json' };
+        body = { model: modelIdWithoutProvider, messages: formatted, max_tokens: 4096, stream: true };
+    } else if (provider === 'groq' && directApiKey) {
+        endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+        headers = { 'Authorization': `Bearer ${directApiKey}`, 'Content-Type': 'application/json' };
+        body = { model: modelIdWithoutProvider, messages: formatted, max_tokens: 4096, stream: true };
+    } else {
+        endpoint = 'https://openrouter.ai/api/v1/chat/completions';
+        headers = { 'Authorization': `Bearer ${openRouterApiKey}`, 'Content-Type': 'application/json' };
+        body = { model: fullModelId, messages: formatted, max_tokens: 4096, stream: true };
+    }
+
+    let response: Response;
+    try {
+        response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body), signal });
+    } catch (err: any) {
+        if (err?.name === 'AbortError') throw err;
+        throw new Error(`Network error contacting ${provider}: ${err?.message || 'request failed'}`);
+    }
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        let message: string;
+        try {
+            const errorData = JSON.parse(errorText);
+            message = errorData.message || errorData.error?.message || JSON.stringify(errorData);
+        } catch {
+            message = errorText || 'An unknown network error occurred.';
+        }
+        throw new Error(`${provider} request failed (HTTP ${response.status}): ${message}`);
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!response.body || !contentType.includes('text/event-stream')) {
+        // Server ignored stream:true and answered with plain JSON.
+        const data = await response.json();
+        const msg = data.choices?.[0]?.message;
+        const text = msg?.content || '';
+        if (text) onDelta(text);
+        return { text, tool_calls: msg?.tool_calls, aichain: data._aichaind };
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let text = '';
+    let aichain: any = undefined;
+    const toolCallAcc: Record<number, ToolCall> = {};
+
+    const handleFrame = (jsonStr: string) => {
+        let frame: any;
+        try { frame = JSON.parse(jsonStr); } catch { return; }
+        if (frame._aichaind) aichain = frame._aichaind;
+        const choice = frame.choices?.[0];
+        if (!choice) return;
+        const delta = choice.delta || choice.message || {};
+        if (typeof delta.content === 'string' && delta.content) {
+            text += delta.content;
+            onDelta(text);
+        }
+        if (Array.isArray(delta.tool_calls)) {
+            for (const tc of delta.tool_calls) {
+                const idx = tc.index ?? 0;
+                if (!toolCallAcc[idx]) {
+                    toolCallAcc[idx] = { id: tc.id || `call_${idx}`, type: 'function',
+                        function: { name: tc.function?.name || '', arguments: tc.function?.arguments || '' } };
+                } else {
+                    if (tc.function?.name) toolCallAcc[idx].function.name += tc.function.name;
+                    if (tc.function?.arguments) toolCallAcc[idx].function.arguments += tc.function.arguments;
+                }
+            }
+        }
+    };
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const rawLine of lines) {
+            const line = rawLine.trim();
+            if (!line.startsWith('data:')) continue;
+            const payload = line.slice(5).trim();
+            if (payload === '[DONE]') { buffer = ''; break; }
+            handleFrame(payload);
+        }
+    }
+
+    const tool_calls = Object.values(toolCallAcc);
+    if (!text && tool_calls.length === 0) {
+        throw new Error('Empty or invalid streaming response from provider.');
+    }
+    return { text, tool_calls: tool_calls.length ? tool_calls : undefined, aichain };
 }

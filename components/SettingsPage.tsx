@@ -124,7 +124,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ initialKeys, initial
                         <div className="max-w-lg mx-auto">
                              <fieldset className="border border-[--border-color] rounded-lg p-6">
                                 <legend className="px-2 font-semibold">Local LLM Setup (OpenAI-Compatible)</legend>
-                                <p className="text-sm text-[--text-secondary-color] mb-6">Connect to a local AI model server like LM Studio, Ollama (with LiteLLM), or Jan. The server must expose an OpenAI-compatible API endpoint.</p>
+                                <p className="text-sm text-[--text-secondary-color] mb-4">Connect to a local AI model server like LM Studio, Ollama (with LiteLLM), or Jan. The server must expose an OpenAI-compatible API endpoint.</p>
+                                <button
+                                    type="button"
+                                    onClick={() => setLlmConfig(prev => ({ ...prev, serverUrl: 'http://127.0.0.1:8080' }))}
+                                    className="mb-6 w-full border border-[--primary-color] text-[--primary-color] hover:bg-[--primary-color] hover:text-white transition-colors rounded-md py-2 px-3 text-sm font-semibold">
+                                    ⛓ Use AIchain router (localhost:8080) — auto model selection, failover &amp; cost metadata
+                                </button>
                                 <div>
                                     <label htmlFor="serverUrl" className="block mb-2 font-semibold text-[--text-color]">Server URL</label>
                                     <input type="text" id="serverUrl" placeholder="http://localhost:1234" value={llmConfig.serverUrl || ''} onChange={handleLlmConfigChange} className="w-full p-3 bg-[--bg-color] border border-[--border-color] text-[--text-color] rounded-md focus:outline-none focus:border-[--primary-color]" />

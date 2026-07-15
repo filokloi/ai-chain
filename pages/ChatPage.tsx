@@ -9,7 +9,7 @@ import { ModelSelectionModal } from '../components/ModelSelectionModal';
 import { useChatManager } from '../hooks/useChatManager';
 import { fetchAndBuildModelStrategy, orderStrategyForEconomy } from '../services/modelService';
 import { loadCatalog, buildIntelligenceMap } from '../services/catalogService';
-import { getAiResponse } from '../services/apiService';
+import { streamAiResponse } from '../services/apiService';
 import { ApiKeys, Chat as ChatType, AttachedFile, LocalLlmConfig, ModelWithProvider, ChatMessage } from '../types';
 import { AppHeader } from '../components/AppHeader';
 
@@ -140,10 +140,25 @@ export const ChatPage: React.FC = () => {
 
             setThinkingModel(modelToTry);
 
-            try {
-                const { text: aiResponseText, tool_calls } = await getAiResponse(modelToTry, apiKeys, localLlmConfig, messages, files, controller.signal);
+            // Streaming: placeholder assistant message fills token by token
+            // (modern-chat UX); removed on failure so failover stays clean.
+            const streamingId = crypto.randomUUID();
+            const startedAt = performance.now();
+            updateCurrentChat(prev => ({ messages: [...prev.messages, {
+                id: streamingId, role: 'assistant' as const, content: '',
+                model: modelToTry.id, streaming: true,
+            }] }));
+            const onDelta = (textSoFar: string) => {
+                updateCurrentChat(prev => ({ messages: prev.messages.map(m =>
+                    m.id === streamingId ? { ...m, content: textSoFar } : m) }));
+            };
 
-                if (tool_calls) {
+            try {
+                const { text: aiResponseText, tool_calls, aichain } = await streamAiResponse(modelToTry, apiKeys, localLlmConfig, messages, files, controller.signal, onDelta);
+
+                if (tool_calls && tool_calls.length > 0) {
+                    // drop the streaming placeholder; the tool-call message replaces it
+                    updateCurrentChat(prev => ({ messages: prev.messages.filter(m => m.id !== streamingId) }));
                     const toolCallMessage: ChatMessage = {
                         id: crypto.randomUUID(),
                         role: 'assistant',
@@ -165,20 +180,27 @@ export const ChatPage: React.FC = () => {
                     await runAiConversation(newMessages, files, controller); // Recursive call
 
                 } else {
-                    const aiMessage: ChatMessage = {
-                        id: crypto.randomUUID(),
-                        role: 'assistant',
-                        content: aiResponseText,
-                        model: modelToTry.id
-                    };
-                    updateCurrentChat(prev => ({ messages: [...prev.messages, aiMessage] }));
+                    // finalize the streamed message: content, routing meta, latency
+                    const latencyMs = Math.round(performance.now() - startedAt);
+                    updateCurrentChat(prev => ({ messages: prev.messages.map(m =>
+                        m.id === streamingId
+                            ? { ...m, content: aiResponseText, streaming: false, aichain, latencyMs }
+                            : m) }));
                 }
 
                 setCurrentModelIndex(modelAttemptIndex);
                 success = true;
 
             } catch (error: any) {
-                if (error.name === 'AbortError') return;
+                if (error.name === 'AbortError') {
+                    // keep whatever streamed in before Stop (empty ones vanish)
+                    updateCurrentChat(prev => ({ messages: prev.messages
+                        .map(m => m.id === streamingId ? { ...m, streaming: false } : m)
+                        .filter(m => m.id !== streamingId || (m.content && m.content.length > 0)) }));
+                    return;
+                }
+                // failover path: drop the failed placeholder entirely
+                updateCurrentChat(prev => ({ messages: prev.messages.filter(m => m.id !== streamingId) }));
 
                 console.error(`Error with ${modelToTry.id}:`, error);
                 let errorToDisplay = `**${modelToTry.id}** failed.\n> *${error.message || 'Unknown error'}*`;

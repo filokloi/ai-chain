@@ -36,6 +36,17 @@ export interface ToolCall {
     };
 }
 
+export interface AichainRouteMeta {
+    routed_model?: string;
+    routed_provider?: string;
+    estimated_cost_usd?: number;
+    fallback_chain?: string[];
+    failover_used?: boolean;
+    route_confidence?: number;
+    exec_latency_ms?: number;
+    cost_tier?: string;
+}
+
 export interface ChatMessage {
     id: string;
     role: 'user' | 'assistant' | 'tool';
@@ -46,6 +57,10 @@ export interface ChatMessage {
     model?: string;
     feedback?: 'like' | 'dislike';
     name?: string; // For tool responses
+    /** Routing transparency: which model actually answered, at what cost. */
+    aichain?: AichainRouteMeta;
+    latencyMs?: number;
+    streaming?: boolean;
 }
 
 export interface Chat {
